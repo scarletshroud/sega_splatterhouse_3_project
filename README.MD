@@ -1,3 +1,3 @@
-# My Awesome Game
+# Splatterhouse 3 Sega Mega Drive
 
-This is My Awesome 16 Bit Cartridge game for mega Drive
+an attempt to recreate a piece of the splatterhouse 3 game on the sega mega drive
