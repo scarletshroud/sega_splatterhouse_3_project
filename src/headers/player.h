@@ -1,5 +1,5 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef _PLAYER_H_
+#define _PLAYER_H_
 
 #include <genesis.h>
 

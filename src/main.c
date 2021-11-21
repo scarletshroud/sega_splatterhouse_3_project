@@ -1,6 +1,10 @@
 #include <genesis.h>
 #include "resources.h"
 #include "headers/game.h"
+#include "headers/title_state.h"
+#include "headers/menu_state.h"
+#include "headers/options_state.h"
+#include "headers/play_state.h"
 
 int main()
 { 

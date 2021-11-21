@@ -8,17 +8,16 @@
 
 void gameInit() 
 {
-    currentState = PLAY_STATE; 
+    currentState = TITLE_STATE; 
 }
 
 void processTitleState() 
 {
     titleStateInit();
-    titleStateRender();
     
     while (currentState == TITLE_STATE)
     {
-        playStateUpdate(); 
+        titleStateUpdate(); 
     }
 
     titleStateClean(); 
