@@ -1,25 +1,23 @@
-#include "headers/play_state.h"
-#include "headers/control.h"
+#include "play_state.h"
+#include "control.h"
 
-void playStateInit()
+void play_state_init()
 {
-    JOY_setEventHandler(&playControlHandler);
-    SPR_init(0, 0, 0);
-    playerInit(p, 100.f, 100.f);  
+    player_init(p, 100.f, 100.f);  
 }
 
-void playStateRender()
+void play_state_render()
 {
-
+    
 }
 
-void playStateUpdate()
+void play_state_update()
 {
-    playerMove(p);    
+    update_player(p);   
     SPR_update();
     SYS_doVBlankProcess();
 }
 
-void playStateClean()
+void play_state_clean()
 {
 } 

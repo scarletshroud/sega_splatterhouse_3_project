@@ -1,23 +1,22 @@
-#include "headers/options_state.h"
-#include "headers/control.h"
+#include "options_state.h"
+#include "control.h"
 
-void optionsStateInit()
+void options_state_init()
 {
-    JOY_setEventHandler(&optionsControlHandler);
+    JOY_setEventHandler(&options_control_handler);
 } 
 
-void optionsStateRender() 
+void options_state_render() 
 {
 
 } 
 
-void optionsStateUpdate()
-{
+void options_state_update() {
     SPR_update();
     SYS_doVBlankProcess();
 }
 
-void optionsStateClean()
+void options_state_clean()
 {
 
 } 
