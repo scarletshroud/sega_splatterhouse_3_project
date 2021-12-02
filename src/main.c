@@ -1,32 +1,32 @@
 #include <genesis.h>
 #include "resources.h"
-#include "headers/game.h"
-#include "headers/title_state.h"
-#include "headers/menu_state.h"
-#include "headers/options_state.h"
-#include "headers/play_state.h"
+#include "game.h"
+#include "title_state.h"
+#include "menu_state.h"
+#include "options_state.h"
+#include "play_state.h"
 
 int main()
 { 
-    gameInit(); 
+    game_init(); 
     while(1)
     {
-        switch (currentState)
+        switch (current_state)
         {
             case TITLE_STATE:
-                processTitleState(); 
+                process_title_state(); 
                 break;
 
             case MENU_STATE:
-                processMenuState();
+                process_menu_state();
                 break;
 
             case PLAY_STATE:
-                processPlayState();
+                process_play_state();
                 break;
 
             case OPTIONS_STATE:
-                processOptionsState;
+                process_options_state();
                 break;
         }
     }

@@ -1,63 +1,72 @@
-#include "headers/game.h"
-#include "headers/control.h"
+#include "game.h"
+#include "control.h"
 
-#include "headers/title_state.h"
-#include "headers/menu_state.h"
-#include "headers/play_state.h"
-#include "headers/options_state.h"
+#include "title_state.h"
+#include "menu_state.h"
+#include "play_state.h"
+#include "options_state.h"
 
-void gameInit() 
+void game_init() 
 {
-    currentState = TITLE_STATE; 
+    current_state = MENU_STATE; 
+    JOY_init();    
+    SPR_init();
 }
 
-void processTitleState() 
+void process_title_state() 
 {
-    titleStateInit();
+    JOY_setEventHandler(&title_control_handler); 
+    title_state_init();
+    title_state_render(); 
+    while (current_state == TITLE_STATE)
+    {
+        title_state_update(); 
+    }
+
+    title_state_clean(); 
+}
+
+void process_menu_state() 
+{
+    JOY_setEventHandler(&menu_control_handler);
+    menu_state_init();
+    menu_state_render();
     
-    while (currentState == TITLE_STATE)
+    while (current_state == MENU_STATE)
     {
-        titleStateUpdate(); 
+        menu_state_update(); 
     }
 
-    titleStateClean(); 
+    menu_state_clean(); 
 }
 
-void processMenuState() 
+void process_play_state() 
 {
-    menuStateInit();
-    menuStateRender();
+    JOY_setEventHandler(&play_control_handler);
+    play_state_init();
+    play_state_render();
+
+    while (current_state == PLAY_STATE)
+    {
+        play_state_update(); 
+    }
+
+    play_state_clean(); 
+}
+
+void process_options_state() 
+{
+    options_state_init();
+    options_state_render();
     
-    while (currentState == MENU_STATE)
+    while (current_state == OPTIONS_STATE)
     {
-        menuStateUpdate(); 
+        options_state_update(); 
     }
 
-    menuStateClean(); 
+    options_state_clean(); 
 }
 
-void processPlayState() 
-{
-    playStateInit();
-    playStateRender();
-
-    while (currentState == PLAY_STATE)
-    {
-        playStateUpdate(); 
-    }
-
-    playStateClean(); 
-}
-
-void processOptionsState() 
-{
-    optionsStateInit();
-    optionsStateRender();
-    
-    while (currentState == OPTIONS_STATE)
-    {
-        optionsStateUpdate(); 
-    }
-
-    optionsStateClean(); 
+void set_game_state(enum GAME_STATE state) {
+    current_state = state;
 }
