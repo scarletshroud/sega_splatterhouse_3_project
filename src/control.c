@@ -17,20 +17,33 @@ void title_control_handler(unsigned short joy, unsigned short changed, unsigned 
 
 void play_control_handler(unsigned short joy, unsigned short changed, unsigned short state) {
     if (joy == JOY_1) {
-        if (changed & state & BUTTON_LEFT) {
-           player_move_left(p);
+        
+        if (state & BUTTON_LEFT) {
+           player_move(DIRECTION_LEFT);
+        } else {
+
+            if (state & BUTTON_RIGHT) {
+            player_move(DIRECTION_RIGHT);
+            } else {
+
+                if (state & BUTTON_UP) {
+                player_move(DIRECTION_UP);
+                } else {
+
+                    if (state & BUTTON_DOWN) {
+                    player_move(DIRECTION_DOWN);
+                    } else {
+                        
+                        if ((changed & BUTTON_RIGHT) | (changed & BUTTON_LEFT) | (changed & BUTTON_UP) | (changed & BUTTON_DOWN)) {
+                            player_move(DIRECTION_NONE); 
+                        }
+                    }
+                }
+            }
         }
 
-        if (changed & state & BUTTON_RIGHT) {
-           player_move_right(p);
-        }
-
-        if (changed & state & BUTTON_UP) {
-           player_move_up(p);
-        }
-
-        if (changed & state & BUTTON_DOWN) {
-           player_move_down(p);
+        if (state & BUTTON_C) {
+            player_jump(); 
         }
     }
 }
@@ -61,5 +74,4 @@ void menu_control_handler(unsigned short joy, unsigned short changed, unsigned s
 }
 
 void options_control_handler(unsigned short joy, unsigned short changed, unsigned short state) {
-
 }
