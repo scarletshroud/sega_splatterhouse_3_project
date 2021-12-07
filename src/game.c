@@ -8,7 +8,7 @@
 
 void game_init() 
 {
-    current_state = MENU_STATE; 
+    current_state = PLAY_STATE; 
     JOY_init();    
     SPR_init();
 }

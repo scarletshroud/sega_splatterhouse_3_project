@@ -5,7 +5,7 @@ enum GAME_STATE {
     TITLE_STATE,
     MENU_STATE, 
     PLAY_STATE,
-    OPTIONS_STATE, 
+    OPTIONS_STATE
 };
 
 enum GAME_STATE current_state; 
