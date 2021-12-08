@@ -45,6 +45,10 @@ void play_control_handler(unsigned short joy, unsigned short changed, unsigned s
         if (state & BUTTON_C) {
             player_jump(); 
         }
+
+        if (state & BUTTON_A) {
+            player_hit(&z);
+        }   
     }
 }
 
