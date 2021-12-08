@@ -3,7 +3,9 @@
 
 #include <genesis.h>
 
-#include "player.h"
+#include "zombie.h"
+
+struct zombie z;
 
 void play_state_init(); 
 void play_state_render(); 
