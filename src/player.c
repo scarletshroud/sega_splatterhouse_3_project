@@ -11,16 +11,21 @@
 #define SPRITE_WIDTH 48
 #define SPRITE_HEIGHT 80
 
-#define ANIM_STAND 0
-#define ANIM_WALK 1
-#define ANIM_JUMP 2
-
-enum STATE 
+static enum STATE 
 {
     STATE_STAND,
     STATE_WALK,
-    STATE_JUMP  
+    STATE_JUMP,
+    STATE_HIT  
 }; 
+
+static enum ANIM 
+{
+    ANIM_STAND,
+    ANIM_WALK,
+    ANIM_JUMP,
+    ANIM_HIT
+};
 
 static struct player 
 {
@@ -35,12 +40,15 @@ static struct player
     Sprite *sprite; 
     unsigned short sprite_width; 
     unsigned short sprite_height; 
-    enum STATE state; 
+    enum STATE state;
+    enum ANIM anim;  
 }; 
 
 static struct player p;
 static const fix16 gravity = FIX16(0.3); 
 short jumping_point;
+
+static uint8_t frame_timer;
 
 void animate_player(); 
 void check_player_floor_collision();
@@ -59,6 +67,8 @@ void player_init(const fix16 pos_x, const fix16 pos_y)
     p.sprite_width = SPRITE_WIDTH; 
     p.sprite_height = SPRITE_HEIGHT;
     p.state = STATE_STAND;
+
+    frame_timer = 0;
 }
 
 void update_player() 
@@ -72,6 +82,16 @@ void update_player()
     }
 
     p.pos_y = fix16Add(p.pos_y, p.dy);
+
+    if (frame_timer == 10) {
+        frame_timer = 0;
+        p.state = STATE_STAND; 
+    }
+
+    if (p.state == STATE_HIT) {
+        frame_timer++;
+    }
+
     animate_player();  
     SPR_setPosition(p.sprite, fix16ToInt(p.pos_x), fix16ToInt(p.pos_y)); 
 }
@@ -85,28 +105,22 @@ void player_move(enum MOVE_DIRECTION direction)
             switch (direction)
             {
                 case DIRECTION_UP:
-                    p.dx = FIX16(0);
                     p.dy = -p.velocity;
                     p.state = STATE_WALK;
                     break;
 
                 case DIRECTION_DOWN:
-                    p.dx = FIX16(0);
                     p.dy = p.velocity;
                     p.state = STATE_WALK;
                     break;
 
                 case DIRECTION_RIGHT:
-                    p.dx = p.velocity;
-                    p.dy = FIX16(0); 
-                    SPR_setHFlip(p.sprite, FALSE);
+                    p.dx = p.velocity; 
                     p.state = STATE_WALK;
                     break;
 
                 case DIRECTION_LEFT: 
                     p.dx = -p.velocity;
-                    p.dy = FIX16(0);
-                    SPR_setHFlip(p.sprite, TRUE);
                     p.state = STATE_WALK; 
                     break;
 
@@ -123,14 +137,12 @@ void player_move(enum MOVE_DIRECTION direction)
             {
                 case DIRECTION_RIGHT:
                     p.dx = p.velocity; 
-                    SPR_setHFlip(p.sprite, FALSE);
                     break;
 
                 case DIRECTION_LEFT: 
                     p.dx = -p.velocity;
-                    SPR_setHFlip(p.sprite, TRUE);
                     break;
-                    
+
                 case DIRECTION_NONE:
                     p.dx = FIX16(0);
                     break;
@@ -149,8 +161,29 @@ void player_jump()
     }
 }
 
+void player_hit(struct zombie *z) 
+{
+    p.state = STATE_HIT;
+
+    if (fix16ToInt(p.pos_x) + p.sprite_width >= fix16ToInt(z->pos_x)) {
+        bang_zombie(z, (uint8_t) 35); 
+    }
+}
+
+struct player_position get_player_position() {
+    return (struct player_position) {.x = p.pos_x, .y = p.pos_y};
+}
+
 void animate_player()
 {
+    if (p.dx > 0) {
+        SPR_setHFlip(p.sprite, FALSE);
+    }
+
+    if (p.dx < 0) {
+        SPR_setHFlip(p.sprite, TRUE);
+    }
+
     switch (p.state) {
         case STATE_STAND:
             SPR_setAnim(p.sprite, ANIM_STAND);
@@ -160,7 +193,10 @@ void animate_player()
             break;
         case STATE_JUMP:
             SPR_setAnim(p.sprite, ANIM_JUMP); 
-            break; 
+            break;
+        case STATE_HIT:
+            SPR_setAnim(p.sprite, ANIM_HIT);
+            break;
     }
 }
 
