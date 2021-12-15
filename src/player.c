@@ -166,7 +166,7 @@ void player_hit(struct zombie *z)
     p.state = STATE_HIT;
 
     if (fix16ToInt(p.pos_x) + p.sprite_width >= fix16ToInt(z->pos_x)) {
-        bang_zombie(z, (uint8_t) 35); 
+        bang_zombie(z, (uint8_t) 25); 
     }
 }
 
