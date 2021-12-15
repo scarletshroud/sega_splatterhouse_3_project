@@ -2,6 +2,7 @@
 #define _ZOMBIE_H_
 
 #include <genesis.h>
+#include "player.h"
 
 enum ZOMBIE_STATE {
     ZOMBIE_STATE_STAND,
@@ -15,6 +16,9 @@ enum ZOMBIE_STATE {
 struct zombie {
     fix16 pos_x; 
     fix16 pos_y; 
+    fix16 dx; 
+    fix16 dy;
+    fix16 velocity; 
     int8_t health;
     uint8_t frame_counter;  
     enum ZOMBIE_STATE state;
