@@ -9,15 +9,17 @@
 
 void title_control_handler(unsigned short joy, unsigned short changed, unsigned short state) {
     if (joy == JOY_1) {
+
         if (changed & state & BUTTON_START) {
             set_game_state(MENU_STATE);
         }
+        
     }
 }
 
 void play_control_handler(unsigned short joy, unsigned short changed, unsigned short state) {
     if (joy == JOY_1) {
-        
+
         if (state & BUTTON_LEFT) {
            player_move(DIRECTION_LEFT);
         } else {

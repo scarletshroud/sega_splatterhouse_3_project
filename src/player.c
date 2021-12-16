@@ -53,10 +53,26 @@ static uint8_t frame_timer;
 void animate_player(); 
 void check_player_floor_collision();
 
+fix16 to_game_pos_x(const fix16 pos_x) {
+    return fix16Add(pos_x, FIX16(SPRITE_WIDTH / 2));  
+}
+
+fix16 to_game_pos_y(const fix16 pos_y) {
+    return fix16Add(pos_y, FIX16(SPRITE_HEIGHT / 2));  
+}
+
+fix16 to_sprite_pos_x(const fix16 pos_x) {
+    return fix16Sub(pos_x, FIX16(SPRITE_WIDTH / 2)); 
+}
+
+fix16 to_sprite_pos_y(const fix16 pos_y) {
+    return fix16Sub(pos_y, FIX16(SPRITE_HEIGHT / 2));
+}
+
 void player_init(const fix16 pos_x, const fix16 pos_y)
  {
-    p.pos_x = pos_x; 
-    p.pos_y = pos_y; 
+    p.pos_x = to_game_pos_x(pos_x); 
+    p.pos_y = to_game_pos_y(pos_y); 
     p.rage = DEFAULT_RAGE;  
     p.lifes = DEFAULT_LIFES;
     p.health = DEFAULT_HEALTH;  
@@ -73,7 +89,8 @@ void player_init(const fix16 pos_x, const fix16 pos_y)
 
 void update_player() 
 {  
-    p.pos_x = fix16Add(p.pos_x, p.dx);
+    if (fix16ToInt(p.pos_x) >= 0 && fix16ToInt(p.pos_x) < 300)
+        p.pos_x = fix16Add(p.pos_x, p.dx);
 
     if (p.state == STATE_JUMP) 
     {
@@ -93,7 +110,7 @@ void update_player()
     }
 
     animate_player();  
-    SPR_setPosition(p.sprite, fix16ToInt(p.pos_x), fix16ToInt(p.pos_y)); 
+    SPR_setPosition(p.sprite, fix16ToInt(to_sprite_pos_x(p.pos_x)), fix16ToInt(to_sprite_pos_y(p.pos_y))); 
 }
 
 void player_move(enum MOVE_DIRECTION direction) 
@@ -156,7 +173,7 @@ void player_jump()
     if (p.state != STATE_JUMP) 
     {
         p.state = STATE_JUMP; 
-        jumping_point = fix16ToInt(p.pos_y) + p.sprite_height; 
+        jumping_point = fix16ToInt(p.pos_y) + p.sprite_height / 2; 
         p.dy = FIX16(-JUMP_VELOCITY);
     }
 }
@@ -165,7 +182,7 @@ void player_hit(struct zombie *z)
 {
     p.state = STATE_HIT;
 
-    if (fix16ToInt(p.pos_x) + p.sprite_width >= fix16ToInt(z->pos_x)) {
+    if (fix16ToInt(p.pos_x) + p.sprite_width / 2 >= fix16ToInt(z->pos_x)) {
         bang_zombie(z, (uint8_t) 25); 
     }
 }
@@ -202,10 +219,10 @@ void animate_player()
 
 void check_player_floor_collision() 
 {
-    if (fix16ToInt(p.pos_y) + p.sprite_height > jumping_point) 
+    if (fix16ToInt(p.pos_y) + p.sprite_height / 2 > jumping_point) 
     {
         p.dy = FIX16(0);
-        p.pos_y = FIX16(jumping_point - p.sprite_height);
+        p.pos_y = FIX16(jumping_point - p.sprite_height / 2);
         jumping_point = 0;
         p.state = STATE_STAND; 
     }

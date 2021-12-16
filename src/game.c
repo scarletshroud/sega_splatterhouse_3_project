@@ -6,18 +6,19 @@
 #include "play_state.h"
 #include "options_state.h"
 
-void game_init() 
-{
-    current_state = PLAY_STATE; 
+void game_init() {
+    current_state = TITLE_STATE;
+
     JOY_init();    
     SPR_init();
 }
 
-void process_title_state() 
-{
+void process_title_state() {
     JOY_setEventHandler(&title_control_handler); 
+
     title_state_init();
     title_state_render(); 
+
     while (current_state == TITLE_STATE)
     {
         title_state_update(); 
@@ -26,9 +27,9 @@ void process_title_state()
     title_state_clean(); 
 }
 
-void process_menu_state() 
-{
+void process_menu_state() {
     JOY_setEventHandler(&menu_control_handler);
+
     menu_state_init();
     menu_state_render();
     
@@ -40,9 +41,9 @@ void process_menu_state()
     menu_state_clean(); 
 }
 
-void process_play_state() 
-{
+void process_play_state() {
     JOY_setEventHandler(&play_control_handler);
+
     play_state_init();
     play_state_render();
 
@@ -54,8 +55,9 @@ void process_play_state()
     play_state_clean(); 
 }
 
-void process_options_state() 
-{
+void process_options_state() {
+    JOY_setEventHandler(&options_control_handler);
+
     options_state_init();
     options_state_render();
     

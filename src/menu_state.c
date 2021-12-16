@@ -4,10 +4,11 @@
 
 #define OPTIONS_NUM 3
 
+#define LABEL_SIZE 10
 typedef struct {
     uint8_t x; 
     uint8_t y; 
-    char label[10]; 
+    char label[LABEL_SIZE]; 
 } option;
 
 static const option options[OPTIONS_NUM] = {
@@ -16,7 +17,7 @@ static const option options[OPTIONS_NUM] = {
     {8, 10, "EXIT"}
 };
 
-Sprite* cursor;
+static Sprite* cursor;
 
 void menu_state_init() {
     current_menu_option = MENU_OPTION_START;
@@ -39,15 +40,13 @@ void menu_state_clean() {
 
 } 
 
-void update_cursor_pos() 
-{
+void update_cursor_pos() {
     const uint8_t tile_size = 8;
     const uint8_t cursor_offset_x = 15;  
     SPR_setPosition(cursor, options[current_menu_option].x * tile_size - cursor_offset_x, options[current_menu_option].y * tile_size); 
 }
 
-void move_cursor_up() 
-{
+void move_cursor_up() {
     if (current_menu_option > 0) {
         current_menu_option--;
     } 

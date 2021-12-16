@@ -13,7 +13,7 @@ enum MOVE_DIRECTION {
     DIRECTION_NONE
 };
 
-enum MOVE_DIRECTION direction;
+enum MOVE_DIRECTION player_direction;
 
 struct player_position {
     fix16 x; 

@@ -1,12 +1,15 @@
 #include "zombie.h"
 #include "resources.h"
 
-#define ZOMBIE_SPRITE_WIDTH 32
-#define ZOMBIE_SPRITE_HEIGHT 64   
-#define ZOMBIE_DEFAULT_HEALTH 100
+#define ZOMBIE_VELOCITY 2
+
 #define ZOMBIE_DEFAULT_DX 0 
 #define ZOMBIE_DEFAULT_DY 0 
-#define ZOMBIE_VELOCITY 2
+
+#define ZOMBIE_SPRITE_WIDTH 32
+#define ZOMBIE_SPRITE_HEIGHT 64   
+
+#define ZOMBIE_DEFAULT_HEALTH 100
 
 enum ZOMBIE_ANIM {
     ANIM_STAND,
@@ -16,10 +19,10 @@ enum ZOMBIE_ANIM {
     ANIM_DIE
 };
 
-void zombie_hit(struct zombie *z); 
-void zombie_walk(struct zombie *z);
-void zombie_attack(struct zombie *z); 
-void zombie_animate(struct zombie *z);
+static void zombie_hit(struct zombie *z); 
+static void zombie_walk(struct zombie *z);
+static void zombie_attack(struct zombie *z); 
+static void zombie_animate(struct zombie *z);
 
 void zombie_init(struct zombie *z, fix16 start_pos_x, fix16 start_pos_y) {
     z->pos_x = start_pos_x; 

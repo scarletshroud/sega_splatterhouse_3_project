@@ -11,7 +11,6 @@ enum GAME_STATE {
 enum GAME_STATE current_state; 
 
 void game_init(); 
-
 void process_title_state(); 
 void process_menu_state(); 
 void process_play_state(); 

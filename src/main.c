@@ -6,13 +6,12 @@
 #include "options_state.h"
 #include "play_state.h"
 
-int main()
-{ 
+int main() { 
+
     game_init(); 
-    while(1)
-    {
-        switch (current_state)
-        {
+
+    while(1) {
+        switch (current_state) {
             case TITLE_STATE:
                 process_title_state(); 
                 break;
@@ -30,5 +29,6 @@ int main()
                 break;
         }
     }
+    
     return 0;
 }
