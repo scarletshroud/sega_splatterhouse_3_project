@@ -7,7 +7,6 @@
 #include "play_state.h"
 
 int main() { 
-
     game_init(); 
 
     while(1) {

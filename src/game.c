@@ -5,10 +5,10 @@
 #include "menu_state.h"
 #include "play_state.h"
 #include "options_state.h"
+#include "sgdk_redefinitions.h"
 
 void game_init() {
-    current_state = TITLE_STATE;
-
+    current_state = PLAY_STATE;
     JOY_init();    
     SPR_init();
 }
@@ -19,8 +19,7 @@ void process_title_state() {
     title_state_init();
     title_state_render(); 
 
-    while (current_state == TITLE_STATE)
-    {
+    while (current_state == TITLE_STATE) {
         title_state_update(); 
     }
 
@@ -33,8 +32,7 @@ void process_menu_state() {
     menu_state_init();
     menu_state_render();
     
-    while (current_state == MENU_STATE)
-    {
+    while (current_state == MENU_STATE) {
         menu_state_update(); 
     }
 
@@ -47,9 +45,9 @@ void process_play_state() {
     play_state_init();
     play_state_render();
 
-    while (current_state == PLAY_STATE)
-    {
-        play_state_update(); 
+    while (current_state == PLAY_STATE) {
+        play_state_update();
+        VDP_showFPS(FALSE); 
     }
 
     play_state_clean(); 
@@ -61,8 +59,7 @@ void process_options_state() {
     options_state_init();
     options_state_render();
     
-    while (current_state == OPTIONS_STATE)
-    {
+    while (current_state == OPTIONS_STATE) {
         options_state_update(); 
     }
 

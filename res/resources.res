@@ -1,5 +1,5 @@
 IMAGE title_background "sprites/welcome_background.png" NONE
-IMAGE jennifer_image "sprites/jennifer3.png" BEST
+IMAGE jennifer_image "sprites/jennifer.png" BEST
 
 SPRITE rick "sprites/rick_sheet.png" 10 10 BEST 5
 SPRITE zombie_sprite "sprites/zombie.png" 9 8 BEST 5

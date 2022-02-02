@@ -4,5 +4,8 @@
     "res",
     "inc"
 ],
-"git.ignoreLimitWarning": true
+"git.ignoreLimitWarning": true,
+"files.associations": {
+    "resources.h": "c"
+}
 }

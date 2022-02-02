@@ -3,6 +3,7 @@
 
 #include <genesis.h>
 #include "player.h"
+#include "position_util.h"
 
 enum ZOMBIE_STATE {
     ZOMBIE_STATE_STAND,
@@ -10,7 +11,7 @@ enum ZOMBIE_STATE {
     ZOMBIE_STATE_HIT, 
     ZOMBIE_STATE_BANG, 
     ZOMBIE_STATE_DIE,
-    ZOMBIE_STATE_NONE  
+    ZOMBIE_STATE_NONE
 };
 
 struct zombie {
@@ -27,9 +28,9 @@ struct zombie {
     fix16 height; 
 };
 
-void zombie_init(struct zombie *z, fix16 start_pos_x, fix16 start_pos_y);
+struct zombie* create_zombie(const fix16 start_pos_x, const fix16 start_pos_y);
 void zombie_update(struct zombie *z);
-void bang_zombie(struct zombie *z, uint8_t damage);
+void bang_zombie(struct zombie *z, const uint8_t damage);
 
 #endif
 

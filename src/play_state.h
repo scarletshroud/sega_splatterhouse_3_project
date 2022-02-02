@@ -3,9 +3,10 @@
 
 #include <genesis.h>
 
+#include "list.h"
 #include "zombie.h"
 
-struct zombie z;
+struct zombie_list* head;
 
 void play_state_init(); 
 void play_state_render(); 
