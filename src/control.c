@@ -43,11 +43,11 @@ void play_control_handler(unsigned short joy, unsigned short changed, unsigned s
         }
 
         if (state & BUTTON_C) {
-            player_jump(); 
+            player_set_state(STATE_JUMP); 
         }
 
         if (state & BUTTON_A) {
-            player_attack(head);
+            player_set_state(STATE_HIT);
         }   
     }
 }

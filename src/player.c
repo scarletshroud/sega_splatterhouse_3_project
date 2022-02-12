@@ -1,12 +1,9 @@
+#include "list.h"
+#include "zombie.h"
 #include "player.h"
 #include "resources.h"
-
-static enum STATE {
-    STATE_STAND,
-    STATE_WALK,
-    STATE_JUMP,
-    STATE_HIT  
-}; 
+#include "play_state.h"
+#include "position_util.h"
 
 #define SPRITE_WIDTH 48
 #define SPRITE_HEIGHT 80
@@ -23,8 +20,8 @@ static struct player {
     Sprite *sprite; 
     unsigned short sprite_width; 
     unsigned short sprite_height; 
-    enum STATE state; 
-    enum STATE direction;
+    enum PLAYER_STATE state; 
+    enum PLAYER_MOVE_DIRECTION direction;
 }; 
 
 static struct player p;
@@ -63,16 +60,13 @@ void player_init(const fix16 pos_x, const fix16 pos_y) {
 
 #define SCREEN_LEFT_SIDE 0
 #define SCREEN_RIGHT_SIDE 300
-static void check_player_collision() {
-    if (fix16_to_int(p.pos_x) - p.sprite_width / 2  + fix16_to_int(p.dx) > SCREEN_LEFT_SIDE && fix16_to_int(p.pos_x) + p.sprite_width / 2 + fix16_to_int(p.dx) < SCREEN_RIGHT_SIDE) {
-        p.pos_x = fix16_add(p.pos_x, p.dx);
-    }   
+static bool check_player_collision() {
+    return (fix16_to_int(p.pos_x) - p.sprite_width / 2  + fix16_to_int(p.dx) > SCREEN_LEFT_SIDE 
+            && fix16_to_int(p.pos_x) + p.sprite_width / 2 + fix16_to_int(p.dx) < SCREEN_RIGHT_SIDE);
 }
 
 static void player_walk() {
-    
-    switch (p.direction)
-    {
+    switch (p.direction) {
         case DIRECTION_UP:
             p.dy = -p.velocity;
             p.state = STATE_WALK;
@@ -101,24 +95,46 @@ static void player_walk() {
     }
 }
 
-void player_update() {
-    check_player_collision(); 
+static void player_jump() {
+    if (jumping_point == 0) {
+        jumping_point = fix16_to_int(p.pos_y) + p.sprite_height / 2; 
+        p.dy = FIX16(-JUMP_VELOCITY);
+    }
+}
 
+static bool check_hit_axis_y(const struct zombie* const z) {
+    return (fix16_to_int(p.pos_y) >= fix16_to_int(z->pos_y) - z->height / 2 && fix16_to_int(p.pos_y) <= fix16_to_int(z->pos_y) + z->height / 2);
+}
+
+static bool check_hit_axis_x(const struct zombie* const z) {
+    return ((fix16_to_int(p.pos_x) + p.sprite_width / 2 >= fix16_to_int(z->pos_x) - z->width / 2 && fix16_to_int(p.pos_x) + p.sprite_width / 2 <= fix16_to_int(z->pos_x) + z->width / 2)
+                || (fix16_to_int(p.pos_x) - p.sprite_width / 2 >= fix16_to_int(z->pos_x) - z->width / 2 && fix16_to_int(p.pos_x) - p.sprite_width / 2 <= fix16_to_int(z->pos_x) + z->width / 2));
+}
+
+static bool check_hit(const struct zombie* const z) {
+    return (check_hit_axis_y(z) && check_hit_axis_x(z));  
+}
+
+#define DAMAGE 25
+static void player_attack() {
+    struct zombie_list* list = head;
+    while (list != NULL) {
+        if (check_hit(list->z)) {
+            bang_zombie(list->z, DAMAGE); 
+        }
+        list = list->next; 
+    }
+}
+
+void player_update() {
     switch(p.state) {
         case STATE_STAND: 
         case STATE_WALK:
             player_walk();
             break; 
 
-        case STATE_HIT:
-            if (frame_timer == 10) {
-                frame_timer = 0;
-                p.state = STATE_STAND; 
-            }
-            frame_timer++;
-            break;
-
         case STATE_JUMP:
+            player_jump();
             switch (p.direction)
             {
                 case DIRECTION_RIGHT:
@@ -135,72 +151,60 @@ void player_update() {
             }
             p.dy = fix16_add(p.dy, gravity);
             check_player_floor_collision();
-            p.pos_y = fix16_add(p.pos_y, p.dy);
+            break;
+
+        case STATE_HIT:
+            player_attack();
+            if (frame_timer == 10) {
+                p.state = STATE_STAND;
+                frame_timer = 0; 
+            }
+            frame_timer++;
+            break;
+
+        case STATE_JUMP_HIT:
+            switch (p.direction)
+            {
+                case DIRECTION_RIGHT:
+                    p.dx = p.velocity; 
+                    break;
+
+                case DIRECTION_LEFT: 
+                    p.dx = -p.velocity;
+                    break;
+
+                case DIRECTION_NONE:
+                    p.dx = FIX16(0);
+                    break;
+            }
+            if (frame_timer == 10) {
+                p.state = STATE_JUMP;
+                frame_timer = 0;
+            }
+            frame_timer++;
             break;
     }
+
+    if (check_player_collision()) { 
+        p.pos_x = fix16_add(p.pos_x, p.dx);
+    }
+
+    p.pos_y = fix16_add(p.pos_y, p.dy);
 
     animate_player();  
     SPR_setPosition(p.sprite, fix16_to_int(to_sprite_pos_x(p.pos_x, SPRITE_WIDTH)), fix16_to_int(to_sprite_pos_y(p.pos_y, SPRITE_HEIGHT)));
 }
 
-/*void player_update() {  
-    check_player_collision(); 
-
-    if (p.state == STATE_JUMP) {
-        p.dy = fix16_add(p.dy, gravity);
-        check_player_floor_collision();
-    }
-
-    p.pos_y = fix16_add(p.pos_y, p.dy);
-
-    if (frame_timer == 10) {
-        frame_timer = 0;
-        p.state = STATE_STAND; 
-    }
-
-    if (p.state == STATE_HIT) {
-        frame_timer++;
-    }
-
-    KLog_U1("player state: ", p.state);
-    animate_player();  
-    SPR_setPosition(p.sprite, fix16_to_int(to_sprite_pos_x(p.pos_x, SPRITE_WIDTH)), fix16_to_int(to_sprite_pos_y(p.pos_y, SPRITE_HEIGHT))); 
-} */
-
-void player_jump() {
-    if (p.state != STATE_JUMP) {
-        p.state = STATE_JUMP; 
-        jumping_point = fix16_to_int(p.pos_y) + p.sprite_height / 2; 
-        p.dy = FIX16(-JUMP_VELOCITY);
-    }
-}
-
-static bool check_hit_axis_y(const struct zombie* const z) {
-    return (fix16_to_int(p.pos_y) >= fix16_to_int(z->pos_y) - z->height / 2 && fix16_to_int(p.pos_y) <= fix16_to_int(z->pos_y) + z->height / 2);
-}
-
-static bool check_hit_axis_x(const struct zombie* const z) {
-    return (fix16_to_int(p.pos_x) + p.sprite_width / 2 >= fix16_to_int(z->pos_x) - z->width / 2 && fix16_to_int(p.pos_x) + p.sprite_width / 2 <= fix16_to_int(z->pos_x) + z->width / 2
-                || fix16_to_int(p.pos_x) - p.sprite_width / 2 >= fix16_to_int(z->pos_x) - z->width / 2 && fix16_to_int(p.pos_x) - p.sprite_width / 2 <= fix16_to_int(z->pos_x) + z->width / 2);
-}
-
-static bool check_hit(const struct zombie* const z) {
-    return (check_hit_axis_y(z) && check_hit_axis_x(z));  
-}
-
-#define DAMAGE 25
-void player_attack(struct zombie_list* list) {
-    p.state = STATE_HIT;
-    while (list != NULL) {
-        if (check_hit(list->z)) {
-            bang_zombie(list->z, DAMAGE); 
-        }
-        list = list->next; 
-    }
-}
-
-void player_set_direction(enum MOVE_DIRECTION direction) {
+void player_set_direction(enum PLAYER_MOVE_DIRECTION direction) {
     p.direction = direction; 
+}
+
+void player_set_state(enum PLAYER_STATE state) {
+    p.state = (p.state == STATE_JUMP && state == STATE_HIT) ? STATE_JUMP_HIT : state;
+}
+
+enum PLAYER_MOVE_DIRECTION player_get_direction() {
+    return p.direction; 
 }
 
 struct player_position get_player_position() {

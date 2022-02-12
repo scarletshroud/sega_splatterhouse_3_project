@@ -1,6 +1,7 @@
 #include "play_state.h"
 
 #include "camera.h"
+#include "zombie.h"
 #include "player.h"
 #include "control.h"
 #include "resources.h"
@@ -17,15 +18,17 @@ void play_state_init() {
 
     VDP_loadTileSet(&level_tileset, index, DMA);
     VDP_setPaletteColors(PAL0, level_palette.data, 16 * 2);
-    map = MAP_create(&level_map, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, TILE_USERINDEX));
+
+    map = MAP_create(&level_map, BG_B, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, index));
 
     VDP_setPalette(PAL1, rick.palette->data);
     VDP_setPalette(PAL2, zombie_sprite.palette->data);
+    VDP_setTextPlane(BG_A);
 
     player_init(FIX16(START_PLAYER_POS_X), FIX16(START_PLAYER_POS_Y));  
     camera_init(&cam, map, FIX16(0), FIX16(0), FIX16(2));
 
-    zombie_list_push_back(&head, create_zombie(FIX16(100), FIX16(100)));
+    //zombie_list_push_back(&head, create_zombie(FIX16(100), FIX16(100)));
     //zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(150))); 
 } 
 
@@ -41,30 +44,16 @@ static void all_zombie_update() {
     }
 }
 
-fix16 prev = 0;
-static void camera_update() {
-    struct player_position p_pos = get_player_position();
-
-    if (fix16_to_int(p_pos.x) > 200 && prev != p_pos.x && player_direction == DIRECTION_RIGHT) 
-        move_camera_right(&cam);
-    
-    if (fix16_to_int(p_pos.x) < 50 && prev != p_pos.x && player_direction == DIRECTION_LEFT)
-        move_camera_left(&cam);
-
-    prev = p_pos.x;
-}
-
 void play_state_update() { 
     player_update();
     all_zombie_update(); 
-    camera_update(); 
+    camera_update(&cam); 
 
     clean_zombie();
 
     SPR_update();
     SYS_doVBlankProcess();
 }
-
 
 static void clean_zombie() {
     struct zombie_list* current = head;

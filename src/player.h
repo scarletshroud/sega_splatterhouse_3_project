@@ -3,19 +3,21 @@
 
 #include <genesis.h>
 
-#include "list.h"
-#include "zombie.h"
-#include "position_util.h"
+enum PLAYER_STATE {
+    STATE_STAND,
+    STATE_WALK,
+    STATE_JUMP,
+    STATE_HIT,
+    STATE_JUMP_HIT  
+}; 
 
-enum MOVE_DIRECTION {
+enum PLAYER_MOVE_DIRECTION {
     DIRECTION_UP,
     DIRECTION_DOWN,
     DIRECTION_RIGHT,
     DIRECTION_LEFT,
     DIRECTION_NONE
 };
-
-enum MOVE_DIRECTION player_direction;
 
 struct player_position {
     fix16 x; 
@@ -24,9 +26,9 @@ struct player_position {
 
 void player_init(const fix16 pos_x, const fix16 pos_y); 
 void player_update();
-void player_jump();
-void player_attack(struct zombie_list* list);
-void player_set_direction(enum MOVE_DIRECTION direction);
+void player_set_direction(enum PLAYER_MOVE_DIRECTION direction);
+void player_set_state(enum PLAYER_STATE state);
+enum PLAYER_MOVE_DIRECTION player_get_direction();
 
 struct player_position get_player_position(); 
 

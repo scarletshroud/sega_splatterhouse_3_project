@@ -4,7 +4,6 @@
 #include <genesis.h>
 
 #include "list.h"
-#include "zombie.h"
 
 struct zombie_list* head;
 

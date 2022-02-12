@@ -39,11 +39,12 @@ void title_state_render()
     render_title_text();
 }
 
+#define FIRST_PART_CLOCK_TIME 1300
 void title_state_update() 
 {
     timer++;
     
-    if (timer < 1300) {
+    if (timer < FIRST_PART_CLOCK_TIME) {
         offset_x = fix16_sub(offset_x, FIX16(HORIZONTAL_SCROLL_VELOCITY));
         offset_y = fix16_add(offset_y, FIX16(VERTICAL_SCROLL_VELOCITY));
 
