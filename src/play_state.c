@@ -28,8 +28,8 @@ void play_state_init() {
     player_init(FIX16(START_PLAYER_POS_X), FIX16(START_PLAYER_POS_Y));  
     camera_init(&cam, map, FIX16(0), FIX16(0), FIX16(2));
 
-    //zombie_list_push_back(&head, create_zombie(FIX16(100), FIX16(100)));
-    //zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(150))); 
+    zombie_list_push_back(&head, create_zombie(FIX16(100), FIX16(100)));
+    zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(150))); 
 } 
 
 void play_state_render() {
@@ -49,7 +49,10 @@ void play_state_update() {
     all_zombie_update(); 
     camera_update(&cam); 
 
+    //KLog_U1("list size ", zombie_list_size(head));
     clean_zombie();
+    zombie_print_list(head);
+    zombie_list_remove(&head, head); 
 
     SPR_update();
     SYS_doVBlankProcess();
@@ -57,10 +60,13 @@ void play_state_update() {
 
 static void clean_zombie() {
     struct zombie_list* current = head;
-    while (current != NULL && current->z->state == ZOMBIE_STATE_NONE) {
-        struct zombie_list* prev = current; 
-        current = current->next; 
-        zombie_list_remove(head, prev); 
+    while (current != NULL) {
+
+        if (current->z->state == ZOMBIE_STATE_NONE) {
+            zombie_list_remove(&head, current); 
+        }
+ 
+        current = current->next;
     }
 }
 

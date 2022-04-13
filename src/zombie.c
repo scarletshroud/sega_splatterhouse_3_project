@@ -23,12 +23,13 @@ static void zombie_attack(struct zombie *z);
 static void zombie_animate(struct zombie *z);
 
 struct zombie* create_zombie(const fix16 start_pos_x, const fix16 start_pos_y) {
-    struct zombie* z = (struct zombie*)malloc(sizeof(struct zombie)); 
+    struct zombie* z = malloc(sizeof(struct zombie)); 
     zombie_init(z, start_pos_x, start_pos_y); 
     return z; 
 }
 
 void zombie_init(struct zombie *z, const fix16 start_pos_x, const fix16 start_pos_y) {
+    z->id = (global_id++);
     z->pos_x = to_game_pos_x(start_pos_x, ZOMBIE_SPRITE_WIDTH); 
     z->pos_y = to_game_pos_y(start_pos_y, ZOMBIE_SPRITE_HEIGHT);
     z->dx = FIX16(ZOMBIE_DEFAULT_DX); 
@@ -42,6 +43,9 @@ void zombie_init(struct zombie *z, const fix16 start_pos_x, const fix16 start_po
     z->frame_counter = 0;  
 }
 
+#define ANIM_BANG_TIME 10
+#define ANIM_HIT_TIME 15
+#define ANIM_DIE_TIME 30
 void zombie_update(struct zombie *z) {
     //zombie_hit(z);
     switch (z->state) {
@@ -54,7 +58,7 @@ void zombie_update(struct zombie *z) {
             break;
 
         case ZOMBIE_STATE_BANG:
-            if (z->frame_counter == 10) {
+            if (z->frame_counter == ANIM_BANG_TIME) {
                 z->state = ZOMBIE_STATE_STAND; 
                 z->frame_counter = 0;
             }
@@ -62,7 +66,7 @@ void zombie_update(struct zombie *z) {
             break;
 
         case ZOMBIE_STATE_HIT:
-            if (z->frame_counter == 15) { 
+            if (z->frame_counter == ANIM_HIT_TIME) { 
                 z->state = ZOMBIE_STATE_STAND;
                 z->frame_counter = 0;
             }
@@ -70,7 +74,7 @@ void zombie_update(struct zombie *z) {
             break;
 
         case ZOMBIE_STATE_DIE:
-            if (z->frame_counter == 30) {
+            if (z->frame_counter == ANIM_DIE_TIME) {
                 z->state = ZOMBIE_STATE_NONE;
                 z->frame_counter = 0;
             }

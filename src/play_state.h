@@ -3,7 +3,7 @@
 
 #include <genesis.h>
 
-#include "list.h"
+#include "zombie_list.h"
 
 struct zombie_list* head;
 

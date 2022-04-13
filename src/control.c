@@ -18,6 +18,8 @@ void title_control_handler(unsigned short joy, unsigned short changed, unsigned 
 void play_control_handler(unsigned short joy, unsigned short changed, unsigned short state) {
     if (joy == JOY_1) {
 
+        enum PLAYER_STATE player_state = get_player_state(); 
+
         if (state & BUTTON_LEFT) {
            player_set_direction(DIRECTION_LEFT);
         } else {
@@ -69,8 +71,6 @@ void menu_control_handler(unsigned short joy, unsigned short changed, unsigned s
                     set_game_state(PLAY_STATE);
                     break;
                 case MENU_OPTION_OPTIONS:
-                    break;
-                case MENU_OPTION_EXIT:
                     break;
             }        
         }

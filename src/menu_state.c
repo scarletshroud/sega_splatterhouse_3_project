@@ -2,7 +2,7 @@
 #include "control.h"
 #include "resources.h"
 
-#define OPTIONS_NUM 3
+#define OPTIONS_NUM 2
 
 #define LABEL_SIZE 10
 typedef struct {
@@ -14,7 +14,6 @@ typedef struct {
 static const option options[OPTIONS_NUM] = {
     {8, 8, "START"},
     {8, 9, "OPTIONS"},
-    {8, 10, "EXIT"}
 };
 
 static Sprite* cursor;
@@ -37,7 +36,7 @@ void menu_state_update() {
 }
 
 void menu_state_clean() {
-
+    VDP_resetScreen();
 } 
 
 void update_cursor_pos() {

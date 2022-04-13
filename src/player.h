@@ -29,6 +29,7 @@ void player_update();
 void player_set_direction(enum PLAYER_MOVE_DIRECTION direction);
 void player_set_state(enum PLAYER_STATE state);
 enum PLAYER_MOVE_DIRECTION player_get_direction();
+enum PLAYER_STATE get_player_state();
 
 struct player_position get_player_position(); 
 

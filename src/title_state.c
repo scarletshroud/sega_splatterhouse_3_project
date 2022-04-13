@@ -1,6 +1,7 @@
 #include "title_state.h"
 #include "control.h"
 #include "resources.h"
+#include "game.h"
 
 #define PLANE_WIDTH 19
 #define PLANE_HEIGHT 127
@@ -16,8 +17,7 @@ static unsigned short timer;
 static void render_title_text();
 static void render_jennifer_animation();  
 
-void title_state_init()
-{
+void title_state_init() {
     VDP_setPlaneSize(PLANE_WIDTH, PLANE_HEIGHT, TRUE);
     VDP_setTextPlane(BG_A);
     VDP_loadTileSet(title_background.tileset, 1, DMA);
@@ -34,14 +34,12 @@ void title_state_init()
     XGM_startPlay(title_track);
 }
 
-void title_state_render()
-{
+void title_state_render() {
     render_title_text();
 }
 
 #define FIRST_PART_CLOCK_TIME 1300
-void title_state_update() 
-{
+void title_state_update() {
     timer++;
     
     if (timer < FIRST_PART_CLOCK_TIME) {
@@ -53,41 +51,43 @@ void title_state_update()
     } else {
         VDP_resetScreen();
         render_jennifer_animation();
+        set_game_state(MENU_STATE);
     }
 
     SYS_doVBlankProcess();
 } 
 
-void title_state_clean()
-{
+void title_state_clean() {
     XGM_stopPlay();
+    VDP_resetScreen();
 } 
 
-void render_title_text() 
-{
+void render_title_text() {
     short text_pos_x = 9; 
     short text_pos_y = 30; 
     short text_offset = 0;
 
     VDP_drawText("IT WAS A TERRIBLE NIGHT",             text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("THEY CAME BACK",                      text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("TO MY HOME",                          text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("GOD... NO..",                         text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("THEY TOOK AWAY MY SON -",             text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("DAVID AND JENNIFER",                  text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("THEY WANT TO PERFORM",                text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("A BRUTAL RITUAL",                     text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("ON DAVID.",                           text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("I MUSTN'T LET THIS",                  text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("HAPPEN..",                            text_pos_x, text_pos_y + (text_offset++));
+    VDP_drawText("THEY CAME BACK",                      text_pos_x + 4, text_pos_y + (text_offset++));
+    VDP_drawText("TO MY HOME",                          text_pos_x + 6, text_pos_y + (text_offset++));
+    VDP_drawText("GOD... NO..",                         text_pos_x + 6, text_pos_y + (text_offset++));
+    VDP_drawText("THEY TOOK AWAY MY SON -",             text_pos_x + 1, text_pos_y + (text_offset++));
+    VDP_drawText("DAVID AND JENNIFER",                  text_pos_x + 2, text_pos_y + (text_offset++));
+    VDP_drawText("THEY WANT TO PERFORM",                text_pos_x + 1, text_pos_y + (text_offset++));
+    VDP_drawText("A BRUTAL RITUAL",                     text_pos_x + 3, text_pos_y + (text_offset++));
+    VDP_drawText("ON DAVID.",                           text_pos_x + 6, text_pos_y + (text_offset++));
+    VDP_drawText("I MUSTN'T LET THIS",                  text_pos_x + 2, text_pos_y + (text_offset++));
+    VDP_drawText("HAPPEN..",                            text_pos_x + 7, text_pos_y + (text_offset++));
     VDP_drawText("I FOUND THIS DAMN MASK",              text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("THESE CREATURES",                     text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("MUST BE",                             text_pos_x, text_pos_y + (text_offset++));
+    VDP_drawText("THESE CREATURES",                     text_pos_x + 3, text_pos_y + (text_offset++));
+    VDP_drawText("MUST BE",                             text_pos_x + 7, text_pos_y + (text_offset++));
     VDP_drawText("ON THE FIRST FLOOR OF",               text_pos_x, text_pos_y + (text_offset++));
-    VDP_drawText("MY FUCKING HOME..",                   text_pos_x, text_pos_y + (text_offset++));
+    VDP_drawText("MY FUCKING HOME..",                   text_pos_x + 2, text_pos_y + (text_offset++));
 }
 
 void render_jennifer_animation() {
+    timer = 0; 
+
     unsigned short palette_full[64];
     memcpy(&palette_full[0], jennifer_image.palette->data, 16 * 2);
     PAL_setPaletteColorsDMA(0, palette_black);
@@ -98,7 +98,8 @@ void render_jennifer_animation() {
     waitMs(3000);
     PAL_fadeOut(0, 40, 100, FALSE);
 
-    while(1) {
+    while (timer < 250) {
         VDP_waitVSync();
+        timer++;
     }
 }

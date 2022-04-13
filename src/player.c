@@ -1,4 +1,4 @@
-#include "list.h"
+#include "zombie_list.h"
 #include "zombie.h"
 #include "player.h"
 #include "resources.h"
@@ -36,7 +36,7 @@ static void check_player_floor_collision();
 #define DEFAULT_DX 0 
 #define DEFAULT_DY 0
 #define DEFAULT_RAGE 0
-#define DEFAULT_LIFES 3 
+#define DEFAULT_LIFE 3 
 #define DEFAULT_HEALTH 100
 #define DEFAULT_VELOCITY 2
 #define JUMP_VELOCITY 6
@@ -45,7 +45,7 @@ void player_init(const fix16 pos_x, const fix16 pos_y) {
     p.pos_x = to_game_pos_x(pos_x, SPRITE_WIDTH); 
     p.pos_y = to_game_pos_y(pos_y, SPRITE_HEIGHT);
     p.rage = DEFAULT_RAGE;  
-    p.lifes = DEFAULT_LIFES;
+    p.lifes = DEFAULT_LIFE;
     p.health = DEFAULT_HEALTH;
     p.dx = FIX16(DEFAULT_DX); 
     p.dy = FIX16(DEFAULT_DY);
@@ -155,10 +155,12 @@ void player_update() {
 
         case STATE_HIT:
             player_attack();
+
             if (frame_timer == 10) {
                 p.state = STATE_STAND;
                 frame_timer = 0; 
             }
+
             frame_timer++;
             break;
 
@@ -177,10 +179,12 @@ void player_update() {
                     p.dx = FIX16(0);
                     break;
             }
+
             if (frame_timer == 10) {
                 p.state = STATE_JUMP;
                 frame_timer = 0;
             }
+
             frame_timer++;
             break;
     }
@@ -200,11 +204,27 @@ void player_set_direction(enum PLAYER_MOVE_DIRECTION direction) {
 }
 
 void player_set_state(enum PLAYER_STATE state) {
-    p.state = (p.state == STATE_JUMP && state == STATE_HIT) ? STATE_JUMP_HIT : state;
+    if (p.state == STATE_JUMP && state == STATE_HIT) {
+        p.state = STATE_JUMP_HIT;
+        return; 
+    } 
+    
+    if (state == STATE_JUMP) {
+        if  ((p.state == STATE_STAND || p.state == STATE_WALK)) {
+            p.state = state; 
+        }
+        return;
+    }
+
+    p.state = state;
 }
 
 enum PLAYER_MOVE_DIRECTION player_get_direction() {
     return p.direction; 
+}
+
+enum PLAYER_STATE get_player_state() {
+    return p.state;
 }
 
 struct player_position get_player_position() {

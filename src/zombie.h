@@ -5,6 +5,8 @@
 #include "player.h"
 #include "position_util.h"
 
+static uint8_t global_id = 1;
+
 enum ZOMBIE_STATE {
     ZOMBIE_STATE_STAND,
     ZOMBIE_STATE_WALK, 
@@ -15,6 +17,7 @@ enum ZOMBIE_STATE {
 };
 
 struct zombie {
+    uint8_t id; 
     fix16 pos_x; 
     fix16 pos_y; 
     fix16 dx; 
