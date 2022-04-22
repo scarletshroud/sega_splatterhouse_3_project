@@ -1,5 +1,5 @@
-#ifndef _LIST_H_
-#define _LIST_H_
+#ifndef _ZOMBIE_LIST_H_
+#define _ZOMBIE_LIST_H_
 
 #include "zombie.h"
 
@@ -20,13 +20,6 @@ void zombie_list_remove(struct zombie_list** head, struct zombie_list* z);
 bool zombie_list_empty(struct zombie_list* head);
 uint8_t zombie_list_size(struct zombie_list* head);
 
-void zombie_print_list(struct zombie_list* head) {
-    struct zombie_list* current = head;
-
-    while(current != NULL) {
-        KLog_U1("id ", current->z->id);
-        current = current->next;
-    }
-}
+void zombie_print_list(struct zombie_list* head);
 
 #endif

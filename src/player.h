@@ -26,10 +26,16 @@ struct player_position {
 
 void player_init(const fix16 pos_x, const fix16 pos_y); 
 void player_update();
-void player_set_direction(enum PLAYER_MOVE_DIRECTION direction);
+
 void player_set_state(enum PLAYER_STATE state);
-enum PLAYER_MOVE_DIRECTION player_get_direction();
+void player_set_direction(enum PLAYER_MOVE_DIRECTION direction);
+
 enum PLAYER_STATE get_player_state();
+enum PLAYER_MOVE_DIRECTION player_get_direction();
+
+uint16_t get_player_health(); 
+uint16_t get_player_energy(); 
+uint16_t get_player_lifes(); 
 
 struct player_position get_player_position(); 
 

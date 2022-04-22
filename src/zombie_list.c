@@ -39,7 +39,6 @@ void zombie_list_remove(struct zombie_list** head, struct zombie_list* z) {
 
     while (current != NULL) {
         if (current == z) {
-            KLog_U1("yep: ", 2);
             if (prev != NULL) {
                 prev->next = current->next;
             }
@@ -62,3 +61,12 @@ void zombie_list_push_back(struct zombie_list** head, struct zombie* z) {
     node->next = (*head);
     (*head) = node; 
 } 
+
+void zombie_print_list(struct zombie_list* head) {
+    struct zombie_list* current = head;
+
+    while(current != NULL) {
+        KLog_U1("id ", current->z->id);
+        current = current->next;
+    }
+}

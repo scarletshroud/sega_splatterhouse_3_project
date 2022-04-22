@@ -43,11 +43,11 @@ void title_state_update() {
     timer++;
     
     if (timer < FIRST_PART_CLOCK_TIME) {
-        offset_x = fix16_sub(offset_x, FIX16(HORIZONTAL_SCROLL_VELOCITY));
-        offset_y = fix16_add(offset_y, FIX16(VERTICAL_SCROLL_VELOCITY));
+        offset_x = fix16Add(offset_x, FIX16(HORIZONTAL_SCROLL_VELOCITY));
+        offset_y = fix16Add(offset_y, FIX16(VERTICAL_SCROLL_VELOCITY));
 
-        VDP_setHorizontalScroll(BG_B, fix16_to_int(offset_x));
-        VDP_setVerticalScroll(BG_A, fix16_to_int(offset_y));
+        VDP_setHorizontalScroll(BG_B, fix16ToInt(offset_x));
+        VDP_setVerticalScroll(BG_A, fix16ToInt(offset_y));
     } else {
         VDP_resetScreen();
         render_jennifer_animation();
@@ -99,7 +99,7 @@ void render_jennifer_animation() {
     PAL_fadeOut(0, 40, 100, FALSE);
 
     while (timer < 250) {
-        VDP_waitVSync();
+        SYS_doVBlankProcess();
         timer++;
     }
 }

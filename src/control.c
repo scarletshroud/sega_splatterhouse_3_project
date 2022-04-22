@@ -1,7 +1,7 @@
 #include <genesis.h>
 
 #include "game.h"
-#include "list.h"
+#include "zombie_list.h"
 #include "player.h"
 #include "control.h"
 #include "menu_state.h"

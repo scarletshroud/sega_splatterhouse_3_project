@@ -6,6 +6,7 @@
 ],
 "git.ignoreLimitWarning": true,
 "files.associations": {
-    "resources.h": "c"
+    "resources.h": "c",
+    "play_state.h": "c"
 }
 }

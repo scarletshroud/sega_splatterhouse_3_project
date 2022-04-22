@@ -37,7 +37,7 @@ void zombie_init(struct zombie *z, const fix16 start_pos_x, const fix16 start_po
     z->velocity = FIX16(ZOMBIE_VELOCITY); 
     z->health = ZOMBIE_DEFAULT_HEALTH; 
     z->state = ZOMBIE_STATE_STAND;
-    z->sprite = SPR_addSprite(&zombie_sprite, fix16_to_int(start_pos_x), fix16_to_int(start_pos_y), TILE_ATTR(PAL2, 0, FALSE, FALSE));
+    z->sprite = SPR_addSprite(&zombie_sprite, fix16ToInt(start_pos_x), fix16ToInt(start_pos_y), TILE_ATTR(PAL2, 0, FALSE, FALSE));
     z->width = ZOMBIE_SPRITE_WIDTH;
     z->height = ZOMBIE_SPRITE_HEIGHT;
     z->frame_counter = 0;  
@@ -52,9 +52,9 @@ void zombie_update(struct zombie *z) {
         case ZOMBIE_STATE_STAND:
         case ZOMBIE_STATE_WALK:
             //zombie_walk(z);
-            z->pos_x = fix16_add(z->pos_x, z->dx);
-            z->pos_y = fix16_add(z->pos_y, z->dy);
-            SPR_setPosition(z->sprite, fix16_to_int(to_sprite_pos_x(z->pos_x, ZOMBIE_SPRITE_WIDTH)), fix16_to_int(to_sprite_pos_y(z->pos_y, ZOMBIE_SPRITE_HEIGHT)));
+            z->pos_x = fix16Add(z->pos_x, z->dx);
+            z->pos_y = fix16Add(z->pos_y, z->dy);
+            SPR_setPosition(z->sprite, fix16ToInt(to_sprite_pos_x(z->pos_x, ZOMBIE_SPRITE_WIDTH)), fix16ToInt(to_sprite_pos_y(z->pos_y, ZOMBIE_SPRITE_HEIGHT)));
             break;
 
         case ZOMBIE_STATE_BANG:
@@ -95,7 +95,7 @@ void zombie_hit(struct zombie *z) {
     }
 
     const struct player_position player_pos = get_player_position();
-    if (abs(fix16_to_int(z->pos_x) - fix16_to_int(player_pos.x)) <= IMPACT_DISTANCE) {
+    if (abs(fix16ToInt(z->pos_x) - fix16ToInt(player_pos.x)) <= IMPACT_DISTANCE) {
         z->state = ZOMBIE_STATE_HIT; 
     }
 }
@@ -103,8 +103,8 @@ void zombie_hit(struct zombie *z) {
 #define DISTANCE_TO_HIT 35
 void zombie_walk(struct zombie *z) {
     const struct player_position player_pos = get_player_position(); 
-    const int8_t distance_x = fix16_to_int(z->pos_x) - fix16_to_int(player_pos.x);
-    const int8_t distance_y = fix16_to_int(z->pos_y) - fix16_to_int(player_pos.y); 
+    const int8_t distance_x = fix16ToInt(z->pos_x) - fix16ToInt(player_pos.x);
+    const int8_t distance_y = fix16ToInt(z->pos_y) - fix16ToInt(player_pos.y); 
 
     if (abs(distance_x) > DISTANCE_TO_HIT) {
         z-> dx = (distance_x > 0) ? -z->velocity : z->velocity;
