@@ -18,22 +18,20 @@ void title_control_handler(unsigned short joy, unsigned short changed, unsigned 
 void play_control_handler(unsigned short joy, unsigned short changed, unsigned short state) {
     if (joy == JOY_1) {
 
-        enum PLAYER_STATE player_state = get_player_state(); 
-
         if (state & BUTTON_LEFT) {
            player_set_direction(DIRECTION_LEFT);
         } else {
 
             if (state & BUTTON_RIGHT) {
-            player_set_direction(DIRECTION_RIGHT);
+                player_set_direction(DIRECTION_RIGHT);
             } else {
 
                 if (state & BUTTON_UP) {
-                player_set_direction(DIRECTION_UP);
+                    player_set_direction(DIRECTION_UP);
                 } else {
 
                     if (state & BUTTON_DOWN) {
-                    player_set_direction(DIRECTION_DOWN);
+                        player_set_direction(DIRECTION_DOWN);
                     } else {
                         
                         if ((changed & (BUTTON_RIGHT | BUTTON_LEFT | BUTTON_UP | BUTTON_DOWN))) {
@@ -49,7 +47,11 @@ void play_control_handler(unsigned short joy, unsigned short changed, unsigned s
         }
 
         if (state & BUTTON_A) {
-            player_set_state(STATE_HIT);
+            player_set_state(STATE_FIRST_HIT);
+        }
+
+        if (state & BUTTON_B) {
+            player_set_state(STATE_BEAST_TRANSORMATION);
         }   
     }
 }

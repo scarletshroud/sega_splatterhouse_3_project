@@ -28,8 +28,10 @@ void play_state_init() {
     player_init(FIX16(START_PLAYER_POS_X), FIX16(START_PLAYER_POS_Y)); 
     camera_init(&cam, map, FIX16(0), FIX16(0), FIX16(2));
 
-    zombie_list_push_back(&head, create_zombie(FIX16(50), FIX16(50)));
-    zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(150))); 
+    zombies[0] = create_zombie(FIX16(50), FIX16(50));
+    zombies[1] = create_zombie(FIX16(100), FIX16(100));
+    //zombie_list_push_back(&head, create_zombie(FIX16(50), FIX16(50)));
+    //zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(150))); 
 } 
 
 #define HUD_TEXT_TILE_Y 25
@@ -58,16 +60,30 @@ static void draw_hud_values() {
     VDP_drawText(lifes,  LIFES_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
 }   
 
+static void clear_hud_values() {
+    VDP_clearText(HEALTH_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
+    VDP_clearText(ENERGY_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
+    VDP_clearText(LIFES_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
+}
+
 void play_state_render() {
     draw_hud();
     draw_hud_values();
 }
 
 static void all_zombie_update() {
-    struct zombie_list* current = head;
+   /* struct zombie_list* current = head;
     while (current != NULL) {
         zombie_update(current->z);
         current = current->next; 
+    } */
+
+    for (uint8_t i = 0; i < 2; ++i) {
+        //KLog_U1("state ", zombies[i]->health);
+        if (zombies[i]->state != ZOMBIE_STATE_NONE)
+            zombie_update(zombies[i]);
+        else 
+            SPR_releaseSprite(zombies[i]->sprite);
     }
 }
 
@@ -76,16 +92,19 @@ void play_state_update() {
     all_zombie_update(); 
     camera_update(&cam); 
 
-    KLog_U1("list size ", zombie_list_size(head));
-    zombie_print_list(head);
+    //KLog_U1("state ", p.state);
+    /*zombie_print_list(head); */
     
+    clear_hud_values();
+    draw_hud_values();
+
     clean_zombie();
     SPR_update();
     SYS_doVBlankProcess();
 }
 
 static void clean_zombie() {
-    struct zombie_list* current = head;
+    /*struct zombie_list* current = head;
     while (current != NULL) {
 
         if (current->z->state == ZOMBIE_STATE_NONE) {
@@ -93,7 +112,7 @@ static void clean_zombie() {
         }
  
         current = current->next;
-    }
+    }*/
 }
 
 void play_state_clean() {

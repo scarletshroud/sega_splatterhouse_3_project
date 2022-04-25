@@ -33,7 +33,7 @@ struct zombie {
 
 struct zombie* create_zombie(const fix16 start_pos_x, const fix16 start_pos_y);
 void zombie_update(struct zombie *z);
-void bang_zombie(struct zombie *z, const uint8_t damage);
+void bang_zombie(struct zombie *z, const int8_t damage);
 
 #endif
 

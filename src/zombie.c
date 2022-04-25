@@ -131,11 +131,13 @@ void zombie_animate(struct zombie *z) {
     SPR_setAnim(z->sprite, z->state);
 }
 
-void bang_zombie(struct zombie *z, const uint8_t damage) {
-    if (z->health <= 0) {
-        z->state = ZOMBIE_STATE_DIE;
-    } else {
-        z->state = ZOMBIE_STATE_BANG;
-        z->health = z->health - damage;
+void bang_zombie(struct zombie *z, const int8_t damage) {
+    if (z->state != ZOMBIE_STATE_BANG) {
+        if (z->health <= 0) {
+            z->state = ZOMBIE_STATE_DIE;
+        } else {
+            z->state = ZOMBIE_STATE_BANG;
+            z->health = z->health - damage;
+        }
     }
 }

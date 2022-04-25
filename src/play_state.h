@@ -5,7 +5,8 @@
 
 #include "zombie_list.h"
 
-struct zombie_list* head;
+//struct zombie_list* head;
+struct zombie* zombies[3];
 
 void play_state_init(); 
 void play_state_render(); 
