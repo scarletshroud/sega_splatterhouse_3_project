@@ -89,7 +89,7 @@ static void update_state(enum PLAYER_STATE state) {
     p.state = state + p.beast_mode * BEAST_STATE_OFFSET;
 }
 
-static void player_walk() {
+static void walk() {
     switch (p.direction) {
         case DIRECTION_UP:
             p.dy = -p.velocity;
@@ -119,7 +119,7 @@ static void player_walk() {
     }
 }
 
-static void player_jump() {
+static void jump() {
     if (p.jumping_point == 0) {
         p.jumping_point = fix16ToInt(p.pos_y) + p.sprite_height / 2; 
         p.dy = FIX16(-JUMP_VELOCITY);
@@ -139,7 +139,7 @@ static bool check_hit(const struct zombie* const z) {
     return (check_hit_axis_y(z) && check_hit_axis_x(z));  
 }
 
-static void player_attack() {
+static void attack() {
     /*
     struct zombie_list* list = head;
     while (list != NULL) {
@@ -157,7 +157,7 @@ static void player_attack() {
     }
 }
 
-static void check_player_floor_collision() {
+static void check_floor_collision() {
     if (fix16ToInt(p.pos_y) + p.sprite_height / 2 > p.jumping_point) {
         p.dy = FIX16(0);
         p.pos_y = FIX16(p.jumping_point - p.sprite_height / 2);
@@ -166,15 +166,15 @@ static void check_player_floor_collision() {
     }
 }
 
-static void rotate_player() {
+static void horizontal_rotate() {
     if (p.dx != 0) {
         bool h_flip = (p.dx > FIX16(0)) ? FALSE : TRUE; 
         SPR_setHFlip(p.sprite, h_flip); 
     }
 }
 
-static void animate_player() {      
-    rotate_player(); 
+static void animate() {      
+    horizontal_rotate(); 
     SPR_setAnim(p.sprite, p.state);
 }
 
@@ -192,7 +192,7 @@ static void rebel() {
 }
 
 #define BEAST_MODE_TIME_LIMIT 500
-static void handle_player_state() {
+static void handle_state() {
     switch(p.state) {
 
         case STATE_STAND:
@@ -200,14 +200,14 @@ static void handle_player_state() {
         case STATE_WALK:
         case STATE_BEAST_WALK:
 
-            player_walk();
+            walk();
 
             break; 
 
         case STATE_JUMP:
         case STATE_BEAST_JUMP:
 
-            player_jump();
+            jump();
 
             switch (p.direction) {
                 case DIRECTION_RIGHT:
@@ -224,7 +224,7 @@ static void handle_player_state() {
             }
 
             p.dy = fix16Add(p.dy, gravity);
-            check_player_floor_collision();
+            check_floor_collision();
 
             break;
 
@@ -236,7 +236,7 @@ static void handle_player_state() {
         case STATE_BEAST_THIRD_HIT:
 
             if (frame_timer.time == 15) {
-                player_attack();
+                attack();
                 update_state(STATE_STAND); 
                 timer_reset(&frame_timer); 
             }
@@ -326,16 +326,15 @@ static void check_health() {
 }
 
 void player_update() {
-    handle_player_state();
+    handle_state();
     update_position();
 
     if (p.beast_mode)
         timer_tick(&beast_mode_timer);
 
     check_health();
-    p.health--;
 
-    animate_player();  
+    animate();  
     SPR_setPosition(p.sprite, fix16ToInt(to_sprite_pos_x(p.pos_x, SPRITE_WIDTH)), fix16ToInt(to_sprite_pos_y(p.pos_y, SPRITE_HEIGHT)));
 }
 

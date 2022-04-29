@@ -30,7 +30,7 @@ void play_state_init() {
     camera_init(&cam, map, FIX16(0), FIX16(0), FIX16(2));
 
     zombies[0] = create_zombie(FIX16(50), FIX16(50));
-    zombies[1] = create_zombie(FIX16(100), FIX16(100));
+    //zombies[1] = create_zombie(FIX16(100), FIX16(100));
     //zombie_list_push_back(&head, create_zombie(FIX16(50), FIX16(50)));
     //zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(150))); 
 } 
@@ -79,7 +79,7 @@ static void all_zombie_update() {
         current = current->next; 
     } */
 
-    for (uint8_t i = 0; i < 2; ++i) {
+    for (uint8_t i = 0; i < 1; ++i) {
         //KLog_U1("state ", zombies[i]->health);
         if (zombies[i]->state != ZOMBIE_STATE_NONE)
             zombie_update(zombies[i]);
