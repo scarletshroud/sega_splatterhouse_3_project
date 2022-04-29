@@ -26,6 +26,9 @@ int main() {
             case OPTIONS_STATE:
                 process_options_state();
                 break;
+
+            case GAME_OVER_STATE:
+                process_game_over_state();
         }
     }
     

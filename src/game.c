@@ -8,7 +8,7 @@
 #include "sgdk_redefinitions.h"
 
 void game_init() {
-    current_state = PLAY_STATE;
+    current_state = GAME_OVER_STATE;
     JOY_init();    
     SPR_init();
 }
@@ -64,6 +64,19 @@ void process_options_state() {
     }
 
     options_state_clean(); 
+}
+
+void process_game_over_state() {
+    JOY_setEventHandler(&game_over_control_handler);
+
+    game_over_state_init();
+    game_over_state_render();
+    
+    while (current_state == GAME_OVER_STATE) {
+        game_over_state_update(); 
+    }
+
+    game_over_state_clean(); 
 }
 
 void set_game_state(enum GAME_STATE state) {

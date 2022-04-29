@@ -7,5 +7,6 @@ void title_control_handler(unsigned short joy, unsigned short changed, unsigned 
 void play_control_handler(unsigned short joy, unsigned short changed, unsigned short state); 
 void menu_control_handler(unsigned short joy, unsigned short changed, unsigned short state);
 void options_control_handler(unsigned short joy, unsigned short changed, unsigned short state); 
+void game_over_control_handler(unsigned short joy, unsigned short changed, unsigned short state);
 
 #endif
