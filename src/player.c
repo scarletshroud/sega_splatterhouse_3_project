@@ -11,7 +11,7 @@
 #define BEAST_STATE_OFFSET 8
 
 static struct player {
-    uint16_t health;
+    int16_t health;
     uint16_t energy;
     uint16_t lifes;
     uint16_t damage;
@@ -64,13 +64,25 @@ void player_init(const fix16 pos_x, const fix16 pos_y) {
 
     timer_reset(&frame_timer);
     timer_reset(&beast_mode_timer);
+
+    XGM_setPCM(64, bump_sound, sizeof(bump_sound));
+    XGM_setPCM(65, rick_death_sound, sizeof(rick_death_sound));
 }
 
 #define SCREEN_LEFT_SIDE -50
 #define SCREEN_RIGHT_SIDE 250
-static bool check_player_collision() {
+
+static bool check_axis_x_collision() {
     return (fix16ToInt(p.pos_x) - p.sprite_width / 2  + fix16ToInt(p.dx) > SCREEN_LEFT_SIDE 
             && fix16ToInt(p.pos_x) + p.sprite_width / 2 + fix16ToInt(p.dx) < SCREEN_RIGHT_SIDE);
+}
+
+#define FLOOR_UPPER_SIDE 70
+#define FLOOR_DOWN_SIDE 120
+
+static bool check_axis_y_collision() {
+    return (fix16ToInt(p.pos_y) + p.sprite_height / 2  + fix16ToInt(p.dy) > FLOOR_UPPER_SIDE 
+            && fix16ToInt(p.pos_y) + p.sprite_height / 2 + fix16ToInt(p.dy) < FLOOR_DOWN_SIDE);
 }
 
 static void update_state(enum PLAYER_STATE state) {
@@ -139,7 +151,8 @@ static void player_attack() {
 
     for (uint8_t i = 0; i < 3; ++i) {
         if (check_hit(zombies[i])) {
-            bang_zombie(zombies[i], p.damage); 
+            bang_zombie(zombies[i], p.damage);
+            XGM_startPlayPCM(64, 15, SOUND_PCM_CH2); 
         }
     }
 }
@@ -170,6 +183,12 @@ static void transform_to_normal() {
     p.beast_mode = FALSE;
     timer_reset(&frame_timer);
     timer_reset(&beast_mode_timer);
+}
+
+static void rebel() {
+    p.health = 100;
+    p.lifes--;
+    p.state = STATE_STAND;
 }
 
 #define BEAST_MODE_TIME_LIMIT 500
@@ -266,6 +285,22 @@ static void handle_player_state() {
             } 
             timer_tick(&frame_timer);
             break;
+
+        case STATE_DIE:
+            if (frame_timer.time == 35) {
+
+                if (p.lifes > 0) {
+                    rebel();
+                } else {
+                    XGM_startPlayPCM(65, 15, SOUND_PCM_CH2); 
+                    p.state = STATE_DEAD;
+                }
+
+                timer_reset(&frame_timer);
+            }
+            timer_tick(&frame_timer);
+
+            break;
     }
 
     if (beast_mode_timer.time == BEAST_MODE_TIME_LIMIT) {
@@ -275,11 +310,19 @@ static void handle_player_state() {
 }
 
 static void update_position() {
-    if (check_player_collision()) { 
+    if (check_axis_x_collision()) { 
         p.pos_x = fix16Add(p.pos_x, p.dx);
     }
 
-    p.pos_y = fix16Add(p.pos_y, p.dy);
+    if (check_axis_y_collision() || p.state == STATE_JUMP || p.state == STATE_JUMP_HIT || p.state == STATE_BEAST_JUMP || p.state == STATE_BEAST_JUMP_HIT) {
+        p.pos_y = fix16Add(p.pos_y, p.dy);
+    }
+}
+
+static void check_health() {
+    if (p.health == 0) {
+        p.state = STATE_DIE;
+    }
 }
 
 void player_update() {
@@ -289,7 +332,8 @@ void player_update() {
     if (p.beast_mode)
         timer_tick(&beast_mode_timer);
 
-    //KLog_U1("state ", p.state);
+    check_health();
+    p.health--;
 
     animate_player();  
     SPR_setPosition(p.sprite, fix16ToInt(to_sprite_pos_x(p.pos_x, SPRITE_WIDTH)), fix16ToInt(to_sprite_pos_y(p.pos_y, SPRITE_HEIGHT)));
@@ -351,22 +395,26 @@ enum PLAYER_MOVE_DIRECTION player_get_direction() {
     return p.direction; 
 }
 
-enum PLAYER_STATE get_player_state() {
+enum PLAYER_STATE player_get_state() {
     return p.state;
 }
 
-uint16_t get_player_health() {
+struct Sprite* player_get_sprite() {
+    return p.sprite;
+}
+
+int16_t player_get_health() {
     return p.health;
 }
 
-uint16_t get_player_energy() {
+uint16_t player_get_energy() {
     return p.energy;
 }
 
-uint16_t get_player_lifes() {
+uint16_t player_get_lifes() {
     return p.lifes;
 }
 
-struct player_position get_player_position() {
+struct player_position player_get_position() {
     return (struct player_position) {.x = p.pos_x, .y = p.pos_y};
 }

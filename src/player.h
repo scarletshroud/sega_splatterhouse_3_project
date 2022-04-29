@@ -19,7 +19,9 @@ enum PLAYER_STATE {
     STATE_BEAST_SECOND_HIT,
     STATE_BEAST_THIRD_HIT,
     STATE_BEAST_JUMP_HIT,
-    STATE_NORMAL_TRANSORMATION  
+    STATE_NORMAL_TRANSORMATION,
+    STATE_DIE,
+    STATE_DEAD  
 }; 
 
 enum PLAYER_MOVE_DIRECTION {
@@ -41,13 +43,14 @@ void player_update();
 void player_set_state(enum PLAYER_STATE state);
 void player_set_direction(enum PLAYER_MOVE_DIRECTION direction);
 
-enum PLAYER_STATE get_player_state();
+enum PLAYER_STATE player_get_state();
 enum PLAYER_MOVE_DIRECTION player_get_direction();
+struct Sprite* player_get_sprite();
 
-uint16_t get_player_health(); 
-uint16_t get_player_energy(); 
-uint16_t get_player_lifes(); 
+int16_t player_get_health(); 
+uint16_t player_get_energy(); 
+uint16_t player_get_lifes(); 
 
-struct player_position get_player_position(); 
+struct player_position player_get_position(); 
 
 #endif

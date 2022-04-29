@@ -1,5 +1,6 @@
 #include "play_state.h"
 
+#include "game.h"
 #include "camera.h"
 #include "zombie.h"
 #include "player.h"
@@ -11,8 +12,8 @@ static struct camera cam;
 
 static void clean_zombie();
 
-#define START_PLAYER_POS_X 100
-#define START_PLAYER_POS_Y 100
+#define START_PLAYER_POS_X 0
+#define START_PLAYER_POS_Y 0
 void play_state_init() {
     short index = 1;
 
@@ -51,9 +52,9 @@ static void draw_hud_values() {
     char energy[VALUE_MAX_LENGTH];
     char lifes[VALUE_MAX_LENGTH];
 
-    sprintf(health, "%d", get_player_health());
-    sprintf(energy, "%d", get_player_energy());
-    sprintf(lifes, "%d", get_player_lifes());
+    sprintf(health, "%d", player_get_health());
+    sprintf(energy, "%d", player_get_energy());
+    sprintf(lifes, "%d", player_get_lifes());
 
     VDP_drawText(health,  HEALTH_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
     VDP_drawText(energy,  ENERGY_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
@@ -87,8 +88,25 @@ static void all_zombie_update() {
     }
 }
 
+static void clean_player() {
+    SPR_releaseSprite(player_get_sprite()); 
+}
+
+static void game_over() {
+    set_game_state(GAME_OVER_STATE);
+}
+
+static bool is_player_alive() {
+    return player_get_state() != STATE_DEAD;
+}
+
 void play_state_update() { 
     player_update();
+
+    if (!is_player_alive()) {
+        game_over(); 
+    }
+
     all_zombie_update(); 
     camera_update(&cam); 
 
@@ -116,4 +134,6 @@ static void clean_zombie() {
 }
 
 void play_state_clean() {
+    clean_player();
+    VDP_resetScreen();
 } 
