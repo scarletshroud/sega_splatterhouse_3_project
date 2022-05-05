@@ -21,7 +21,8 @@ enum PLAYER_STATE {
     STATE_BEAST_JUMP_HIT,
     STATE_NORMAL_TRANSORMATION,
     STATE_DIE,
-    STATE_DEAD  
+    STATE_BANG,
+    STATE_DEAD 
 }; 
 
 enum PLAYER_MOVE_DIRECTION {
@@ -39,6 +40,7 @@ struct player_position {
 
 void player_init(const fix16 pos_x, const fix16 pos_y); 
 void player_update();
+void player_bang(int8_t damage);
 
 void player_set_state(enum PLAYER_STATE state);
 void player_set_direction(enum PLAYER_MOVE_DIRECTION direction);

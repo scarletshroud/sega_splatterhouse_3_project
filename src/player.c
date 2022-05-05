@@ -19,7 +19,8 @@ static struct player {
     fix16 dy; 
     fix16 pos_x; 
     fix16 pos_y;
-    fix16 velocity; 
+    fix16 velocity_x;
+    fix16 velocity_y; 
     Sprite *sprite; 
     unsigned short sprite_width; 
     unsigned short sprite_height;
@@ -42,7 +43,8 @@ static struct timer beast_mode_timer;
 #define DEFAULT_HEALTH 100
 #define DEFAULT_DAMAGE 35
 #define BEAST_DAMAGE 100
-#define DEFAULT_VELOCITY 2
+#define DEFAULT_VELOCITY_X 2
+#define DEFAULT_VELOCITY_Y 1
 #define JUMP_VELOCITY 6
 void player_init(const fix16 pos_x, const fix16 pos_y) {
     p.pos_x = to_game_pos_x(pos_x, SPRITE_WIDTH); 
@@ -53,7 +55,8 @@ void player_init(const fix16 pos_x, const fix16 pos_y) {
     p.damage = DEFAULT_DAMAGE;
     p.dx = FIX16(DEFAULT_DX); 
     p.dy = FIX16(DEFAULT_DY);
-    p.velocity = FIX16(DEFAULT_VELOCITY);
+    p.velocity_x = FIX16(DEFAULT_VELOCITY_X);
+    p.velocity_y = FIX16(DEFAULT_VELOCITY_Y);
     p.sprite = SPR_addSprite(&rick, fix16ToInt(pos_x), fix16ToInt(pos_y), TILE_ATTR(PAL1, 0, FALSE, FALSE)); 
     p.sprite_width = SPRITE_WIDTH; 
     p.sprite_height = SPRITE_HEIGHT;
@@ -69,16 +72,10 @@ void player_init(const fix16 pos_x, const fix16 pos_y) {
     XGM_setPCM(65, rick_death_sound, sizeof(rick_death_sound));
 }
 
-#define SCREEN_LEFT_SIDE -50
-#define SCREEN_RIGHT_SIDE 250
-
 static bool check_axis_x_collision() {
     return (fix16ToInt(p.pos_x) - p.sprite_width / 2  + fix16ToInt(p.dx) > SCREEN_LEFT_SIDE 
             && fix16ToInt(p.pos_x) + p.sprite_width / 2 + fix16ToInt(p.dx) < SCREEN_RIGHT_SIDE);
 }
-
-#define FLOOR_UPPER_SIDE 70
-#define FLOOR_DOWN_SIDE 120
 
 static bool check_axis_y_collision() {
     return (fix16ToInt(p.pos_y) + p.sprite_height / 2  + fix16ToInt(p.dy) > FLOOR_UPPER_SIDE 
@@ -92,22 +89,22 @@ static void update_state(enum PLAYER_STATE state) {
 static void walk() {
     switch (p.direction) {
         case DIRECTION_UP:
-            p.dy = -p.velocity;
+            p.dy = -p.velocity_y;
             update_state(STATE_WALK);
             break;
 
         case DIRECTION_DOWN:
-            p.dy = p.velocity;
+            p.dy = p.velocity_y;
             update_state(STATE_WALK);
             break;
 
         case DIRECTION_RIGHT:
-            p.dx = p.velocity; 
+            p.dx = p.velocity_x; 
             update_state(STATE_WALK);
             break;
 
         case DIRECTION_LEFT: 
-            p.dx = -p.velocity;
+            p.dx = -p.velocity_x;
             update_state(STATE_WALK); 
             break;
 
@@ -157,13 +154,14 @@ static void attack() {
     }
 }
 
-static void check_floor_collision() {
+static bool check_floor_collision() {
     if (fix16ToInt(p.pos_y) + p.sprite_height / 2 > p.jumping_point) {
         p.dy = FIX16(0);
         p.pos_y = FIX16(p.jumping_point - p.sprite_height / 2);
         p.jumping_point = 0;
-        update_state(STATE_STAND); 
+        return TRUE;
     }
+    return FALSE;
 }
 
 static void horizontal_rotate() {
@@ -191,6 +189,29 @@ static void rebel() {
     p.state = STATE_STAND;
 }
 
+static void handle_jump_direction() {
+    switch (p.direction) {
+        case DIRECTION_RIGHT:
+            p.dx = p.velocity_x; 
+            break;
+
+        case DIRECTION_LEFT: 
+            p.dx = -p.velocity_x;
+            break;
+
+        case DIRECTION_NONE:
+            p.dx = FIX16(0);
+            break;
+    }
+}
+
+static void fall_down() {
+    p.dy = fix16Add(p.dy, gravity);
+    if (check_floor_collision()) {
+        update_state(STATE_STAND); 
+    }
+}
+
 #define BEAST_MODE_TIME_LIMIT 500
 static void handle_state() {
     switch(p.state) {
@@ -199,33 +220,14 @@ static void handle_state() {
         case STATE_BEAST_STAND: 
         case STATE_WALK:
         case STATE_BEAST_WALK:
-
             walk();
-
             break; 
 
         case STATE_JUMP:
         case STATE_BEAST_JUMP:
-
             jump();
-
-            switch (p.direction) {
-                case DIRECTION_RIGHT:
-                    p.dx = p.velocity; 
-                    break;
-
-                case DIRECTION_LEFT: 
-                    p.dx = -p.velocity;
-                    break;
-
-                case DIRECTION_NONE:
-                    p.dx = FIX16(0);
-                    break;
-            }
-
-            p.dy = fix16Add(p.dy, gravity);
-            check_floor_collision();
-
+            handle_jump_direction();
+            fall_down();
             break;
 
         case STATE_FIRST_HIT:
@@ -246,28 +248,9 @@ static void handle_state() {
 
         case STATE_JUMP_HIT:
         case STATE_BEAST_JUMP_HIT:
-
-            switch (p.direction) {
-                case DIRECTION_RIGHT:
-                    p.dx = p.velocity; 
-                    break;
-
-                case DIRECTION_LEFT: 
-                    p.dx = -p.velocity;
-                    break;
-
-                case DIRECTION_NONE:
-                    p.dx = FIX16(0);
-                    break;
-            }
-
-            if (frame_timer.time == 10) {
-                update_state(STATE_JUMP); 
-                timer_reset(&frame_timer);
-            }
-
-            timer_tick(&frame_timer);
-
+            attack();
+            handle_jump_direction();
+            fall_down();
             break;
 
         case STATE_BEAST_TRANSORMATION:
@@ -283,6 +266,14 @@ static void handle_state() {
                 update_state(STATE_STAND);
                 timer_reset(&frame_timer); 
             } 
+            timer_tick(&frame_timer);
+            break;
+
+        case STATE_BANG:
+            if (frame_timer.time == 7) {
+                update_state(STATE_STAND);
+                timer_reset(&frame_timer);
+            }
             timer_tick(&frame_timer);
             break;
 
@@ -388,6 +379,12 @@ void player_set_state(enum PLAYER_STATE state) {
     }
 
     update_state(state);
+}
+
+void player_bang(int8_t damage) {
+    p.health -= damage;
+    update_state(STATE_BANG);
+    KLog_U1("hm state ", p.state);
 }
 
 enum PLAYER_MOVE_DIRECTION player_get_direction() {
