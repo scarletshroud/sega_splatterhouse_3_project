@@ -25,7 +25,11 @@ static void move_camera_left(struct camera *cam) {
 }
 
 static void move_camera_right(struct camera *cam) {
-    if (cam->pos_x < intToFix16(cam->map->w * MAP_BLOCK_SIZE)) {
+    KLog_F1("yeeep ", cam->pos_x);
+    KLog_U1("w ", cam->map->w * MAP_BLOCK_SIZE);
+    KLog_F1("inret ", intToFix16(cam->map->w * MAP_BLOCK_SIZE));
+    if (fix16ToInt(cam->pos_x) < cam->map->w * MAP_BLOCK_SIZE) {
+        KLog_U1("yeeep", 1);
         cam->pos_x = fix16Add(cam->pos_x, cam->velocity);
         MAP_scrollTo(cam->map, fix16ToInt(cam->pos_x), fix16ToInt(cam->pos_y));
     }   
@@ -46,14 +50,15 @@ static void move_camera_vertically(struct camera *cam, fix16 pos_y) {
 }
 
 fix16 prev = 0;
-#define CAMERA_RIGHT_BORDER 200
-#define CAMERA_LEFT_BORDER 50
+#define CAMERA_RIGHT_BORDER 55
+#define CAMERA_LEFT_BORDER 115
 void camera_update(struct camera* cam) {
     struct player_position p_pos = player_get_position();
     enum PLAYER_MOVE_DIRECTION p_dir = player_get_direction();
 
-    if (fix16ToInt(p_pos.x) > CAMERA_RIGHT_BORDER && prev != p_pos.x &&  p_dir == DIRECTION_RIGHT) 
+    if (fix16ToInt(p_pos.x) > CAMERA_RIGHT_BORDER && prev != p_pos.x &&  p_dir == DIRECTION_RIGHT) {
         move_camera_right(cam);
+    }
     
     if (fix16ToInt(p_pos.x) < CAMERA_LEFT_BORDER && prev != p_pos.x && p_dir == DIRECTION_LEFT)
         move_camera_left(cam);
