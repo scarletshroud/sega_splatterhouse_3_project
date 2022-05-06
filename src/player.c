@@ -36,6 +36,15 @@ static const fix16 gravity = FIX16(0.3);
 static struct timer frame_timer;
 static struct timer beast_mode_timer;
 
+#define BUMP_SOUND_ID 64
+#define RICK_DEATH_SOUND_ID 65
+#define RICK_BUMP_SOUND_ID 66
+static void sounds_init() {
+    XGM_setPCM(BUMP_SOUND_ID, bump_sound, sizeof(bump_sound));
+    XGM_setPCM(RICK_DEATH_SOUND_ID, rick_death_sound, sizeof(rick_death_sound));
+    XGM_setPCM(RICK_BUMP_SOUND_ID, rick_bump_sound, sizeof(rick_bump_sound));
+}
+
 #define DEFAULT_DX 0 
 #define DEFAULT_DY 0
 #define DEFAULT_ENERGY 51
@@ -43,7 +52,7 @@ static struct timer beast_mode_timer;
 #define DEFAULT_HEALTH 100
 #define DEFAULT_DAMAGE 35
 #define BEAST_DAMAGE 100
-#define DEFAULT_VELOCITY_X 2
+#define DEFAULT_VELOCITY_X 1
 #define DEFAULT_VELOCITY_Y 1
 #define JUMP_VELOCITY 6
 void player_init(const fix16 pos_x, const fix16 pos_y) {
@@ -68,8 +77,7 @@ void player_init(const fix16 pos_x, const fix16 pos_y) {
     timer_reset(&frame_timer);
     timer_reset(&beast_mode_timer);
 
-    XGM_setPCM(64, bump_sound, sizeof(bump_sound));
-    XGM_setPCM(65, rick_death_sound, sizeof(rick_death_sound));
+    sounds_init();
 }
 
 static bool check_axis_x_collision() {
@@ -149,7 +157,7 @@ static void attack() {
     for (uint8_t i = 0; i < 3; ++i) {
         if (check_hit(zombies[i])) {
             bang_zombie(zombies[i], p.damage);
-            XGM_startPlayPCM(64, 15, SOUND_PCM_CH2); 
+            XGM_startPlayPCM(BUMP_SOUND_ID, 15, SOUND_PCM_CH2); 
         }
     }
 }
@@ -283,7 +291,7 @@ static void handle_state() {
                 if (p.lifes > 0) {
                     rebel();
                 } else {
-                    XGM_startPlayPCM(65, 15, SOUND_PCM_CH2); 
+                    XGM_startPlayPCM(RICK_DEATH_SOUND_ID, 15, SOUND_PCM_CH2); 
                     p.state = STATE_DEAD;
                 }
 
@@ -384,7 +392,7 @@ void player_set_state(enum PLAYER_STATE state) {
 void player_bang(int8_t damage) {
     p.health -= damage;
     update_state(STATE_BANG);
-    KLog_U1("hm state ", p.state);
+    XGM_startPlayPCM(RICK_BUMP_SOUND_ID, 15, SOUND_PCM_CH2);
 }
 
 enum PLAYER_MOVE_DIRECTION player_get_direction() {

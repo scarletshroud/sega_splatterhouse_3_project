@@ -6,14 +6,17 @@
 #include "player.h"
 #include "control.h"
 #include "resources.h"
+#include <timer.h>
 
 Map *map;
 static struct camera cam; 
 
 static void clean_zombie();
+static uint32_t start_time;
 
 #define START_PLAYER_POS_X 0
 #define START_PLAYER_POS_Y 0
+#define REMAINING_TIME 60
 void play_state_init() {
     short index = 1;
 
@@ -36,16 +39,30 @@ void play_state_init() {
 
     XGM_setLoopNumber(-1);
     XGM_startPlay(level_track); 
+
+    startTimer(0);
+    start_time = getSubTick();
 } 
+
+static uint32_t calculate_seconds() {
+    return (getSubTick() - start_time) / SUBTICKPERSECOND;
+} 
+
+static uint32_t calculate_ramaining_time() {
+    return REMAINING_TIME - calculate_seconds();
+}
 
 #define HUD_TEXT_TILE_Y 25
 #define LIFES_TEXT_TILE_X 30 
 #define HEALTH_TEXT_TILE_X 1
 #define ENERGY_TEXT_TILE_X 15 
+#define TIMER_TEXT_TILE_X 5
+#define TIMER_TEXT_TILE_Y 1  
 static void draw_hud() {
     VDP_drawText("Health:",  HEALTH_TEXT_TILE_X, HUD_TEXT_TILE_Y);
     VDP_drawText("Energy:",  ENERGY_TEXT_TILE_X, HUD_TEXT_TILE_Y);
-    VDP_drawText("Lifes:",  LIFES_TEXT_TILE_X, HUD_TEXT_TILE_Y);
+    VDP_drawText("Lifes:",   LIFES_TEXT_TILE_X,  HUD_TEXT_TILE_Y);
+    VDP_drawText("Time: ",   TIMER_TEXT_TILE_X,  TIMER_TEXT_TILE_Y);
 }
 
 #define VALUE_OFFSET 7
@@ -58,11 +75,22 @@ static void draw_hud_values() {
     sprintf(health, "%d", player_get_health());
     sprintf(energy, "%d", player_get_energy());
     sprintf(lifes, "%d", player_get_lifes());
+    
 
     VDP_drawText(health,  HEALTH_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
     VDP_drawText(energy,  ENERGY_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
     VDP_drawText(lifes,  LIFES_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
-}   
+}
+
+static void draw_hud_time() {
+    char time[VALUE_MAX_LENGTH];
+    sprintf(time, "%d", calculate_ramaining_time());
+    VDP_drawText(time,  TIMER_TEXT_TILE_X + VALUE_OFFSET, TIMER_TEXT_TILE_Y);
+}
+
+static void clear_hud_time() {
+    VDP_clearText(TIMER_TEXT_TILE_X + VALUE_OFFSET, TIMER_TEXT_TILE_Y, VALUE_MAX_LENGTH);
+}
 
 static void clear_hud_values() {
     VDP_clearText(HEALTH_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
@@ -103,6 +131,12 @@ static bool is_player_alive() {
     return player_get_state() != STATE_DEAD;
 }
 
+static void check_remaining_time() {
+    if (calculate_ramaining_time() == 0) {
+        game_over(); 
+    }
+}
+
 void play_state_update() { 
     player_update();
 
@@ -114,9 +148,14 @@ void play_state_update() {
     all_zombie_update(); 
     camera_update(&cam); 
 
-    //KLog_U1("state ", p.state);
-    /*zombie_print_list(head); */
-    
+    if (calculate_seconds() > 0) {
+        check_remaining_time();
+        clear_hud_time();
+        draw_hud_time();
+        startTimer(0);
+        start_time = getTick();
+    }
+
     clear_hud_values();
     draw_hud_values();
 
@@ -138,5 +177,7 @@ static void clean_zombie() {
 
 void play_state_clean() {
     clean_player();
+    clear_hud_time();
+    clear_hud_values();
     VDP_resetScreen();
 } 
