@@ -12,8 +12,8 @@ typedef struct {
 } option;
 
 static const option options[OPTIONS_NUM] = {
-    {8, 8, "START"},
-    {8, 9, "OPTIONS"},
+    {17, 11, "START"},
+    {16, 12, "OPTIONS"},
 };
 
 static Sprite* cursor;
