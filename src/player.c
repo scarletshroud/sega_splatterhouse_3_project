@@ -378,7 +378,6 @@ void player_set_state(enum PLAYER_STATE state) {
             state = random_hit_state();
             update_state(state);
         }
-
         return;
     }
 

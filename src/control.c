@@ -19,27 +19,15 @@ void play_control_handler(unsigned short joy, unsigned short changed, unsigned s
     if (joy == JOY_1) {
 
         if (state & BUTTON_LEFT) {
-           player_set_direction(DIRECTION_LEFT);
-        } else {
-
-            if (state & BUTTON_RIGHT) {
-                player_set_direction(DIRECTION_RIGHT);
-            } else {
-
-                if (state & BUTTON_UP) {
-                    player_set_direction(DIRECTION_UP);
-                } else {
-
-                    if (state & BUTTON_DOWN) {
-                        player_set_direction(DIRECTION_DOWN);
-                    } else {
-                        
-                        if ((changed & (BUTTON_RIGHT | BUTTON_LEFT | BUTTON_UP | BUTTON_DOWN))) {
-                            player_set_direction(DIRECTION_NONE); 
-                        }
-                    }
-                }
-            }
+            player_set_direction(DIRECTION_LEFT);
+        } else if (state & BUTTON_RIGHT) {
+            player_set_direction(DIRECTION_RIGHT);
+        } else if (state & BUTTON_UP) {
+            player_set_direction(DIRECTION_UP);
+        } else if (state & BUTTON_DOWN) {
+            player_set_direction(DIRECTION_DOWN);
+        } else if ((changed & (BUTTON_RIGHT | BUTTON_LEFT | BUTTON_UP | BUTTON_DOWN))) {
+            player_set_direction(DIRECTION_NONE); 
         }
 
         if (state & BUTTON_C) {
