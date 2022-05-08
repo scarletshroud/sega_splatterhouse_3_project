@@ -13,6 +13,7 @@ static struct camera cam;
 
 static void clean_zombie();
 static uint32_t start_time;
+static uint8_t cycle;
 
 #define PLANE_WIDTH 64
 #define PLANE_HEIGHT 32
@@ -46,6 +47,8 @@ void play_state_init() {
 
     startTimer(0);
     start_time = getSubTick();
+
+    cycle = 0;
 } 
 
 static uint32_t calculate_seconds() {
@@ -163,7 +166,7 @@ void play_state_update() {
 
     clear_hud_values();
     draw_hud_values();
-
+    
     SPR_update();
     SYS_doVBlankProcess();
 }

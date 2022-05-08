@@ -239,7 +239,6 @@ static void handle_state() {
         case STATE_BEAST_FIRST_HIT:
         case STATE_BEAST_SECOND_HIT:
         case STATE_BEAST_THIRD_HIT:
-
             if (frame_timer.time == 15) {
                 attack();
                 update_state(STATE_STAND); 
@@ -387,7 +386,7 @@ void player_set_state(enum PLAYER_STATE state) {
 }
 
 void player_bang(int8_t damage) {
-    if (p.state != STATE_BANG) {
+    if (p.state != STATE_BANG && p.state != STATE_FIRST_HIT && p.state != STATE_SECOND_HIT && p.state != STATE_THIRD_HIT) {
         p.health -= damage;
         update_state(STATE_BANG);
         XGM_startPlayPCM(RICK_BUMP_SOUND_ID, 15, SOUND_PCM_CH2);
