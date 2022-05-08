@@ -14,9 +14,12 @@ enum ZOMBIE_STATE {
     ZOMBIE_STATE_HIT, 
     ZOMBIE_STATE_BANG, 
     ZOMBIE_STATE_DIE,
+    ZOMBIE_STATE_INJURED_STAND,
+    ZOMBIE_STATE_INJURED_WALK,
+    ZOMBIE_STATE_INJURED_HIT,
     ZOMBIE_STATE_ATTACK,
     ZOMBIE_STATE_WALK_AWAY,
-    ZOMBIE_STATE_NONE
+    ZOMBIE_STATE_DEAD
 };
 
 struct zombie {
@@ -30,6 +33,7 @@ struct zombie {
     int8_t damage;
     uint8_t frame_counter;  
     enum ZOMBIE_STATE state;
+    bool injured;
     Sprite *sprite;
     fix16 width; 
     fix16 height;
