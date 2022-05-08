@@ -28,6 +28,7 @@ static struct player {
     enum PLAYER_STATE state; 
     enum PLAYER_MOVE_DIRECTION direction;
     bool beast_mode;
+    bool turned;
 };
 
 static struct player p;
@@ -47,12 +48,12 @@ static void sounds_init() {
 
 #define DEFAULT_DX 0 
 #define DEFAULT_DY 0
-#define DEFAULT_ENERGY 51
+#define DEFAULT_ENERGY 0
 #define DEFAULT_LIFE 3 
 #define DEFAULT_HEALTH 100
 #define DEFAULT_DAMAGE 35
 #define BEAST_DAMAGE 100
-#define DEFAULT_VELOCITY_X 1
+#define DEFAULT_VELOCITY_X 2
 #define DEFAULT_VELOCITY_Y 1
 #define JUMP_VELOCITY 6
 void player_init(const fix16 pos_x, const fix16 pos_y) {
@@ -73,6 +74,7 @@ void player_init(const fix16 pos_x, const fix16 pos_y) {
     p.state = STATE_STAND;
     p.direction = DIRECTION_NONE;
     p.beast_mode = FALSE;
+    p.turned = FALSE;
 
     timer_reset(&frame_timer);
     timer_reset(&beast_mode_timer);
@@ -136,8 +138,8 @@ static bool check_hit_axis_y(const struct zombie* const z) {
 }
 
 static bool check_hit_axis_x(const struct zombie* const z) {
-    return ((fix16ToInt(p.pos_x) + p.sprite_width / 2 >= fix16ToInt(z->pos_x) - z->width / 2 && fix16ToInt(p.pos_x) + p.sprite_width / 2 <= fix16ToInt(z->pos_x) + z->width / 2)
-                || (fix16ToInt(p.pos_x) - p.sprite_width / 2 >= fix16ToInt(z->pos_x) - z->width / 2 && fix16ToInt(p.pos_x) - p.sprite_width / 2 <= fix16ToInt(z->pos_x) + z->width / 2));
+    return ((fix16ToInt(p.pos_x) + p.sprite_width >= fix16ToInt(z->pos_x) - z->width / 2 && fix16ToInt(p.pos_x) + p.sprite_width <= fix16ToInt(z->pos_x) + z->width && p.turned == FALSE)
+                || (fix16ToInt(p.pos_x) - p.sprite_width / 2 >= fix16ToInt(z->pos_x) - z->width && fix16ToInt(p.pos_x) - p.sprite_width / 2 <= fix16ToInt(z->pos_x) + z->width / 2) && p.turned == TRUE);
 }
 
 static bool check_hit(const struct zombie* const z) {
@@ -145,20 +147,13 @@ static bool check_hit(const struct zombie* const z) {
 }
 
 static void attack() {
-    /*
     struct zombie_list* list = head;
     while (list != NULL) {
         if (check_hit(list->z)) {
-            bang_zombie(list->z, DAMAGE); 
-        }
-        list = list->next; 
-    } */
-
-    for (uint8_t i = 0; i < 3; ++i) {
-        if (check_hit(zombies[i])) {
-            bang_zombie(zombies[i], p.damage);
+            bang_zombie(list->z, p.damage);
             XGM_startPlayPCM(BUMP_SOUND_ID, 15, SOUND_PCM_CH2); 
         }
+        list = list->next; 
     }
 }
 
@@ -174,8 +169,8 @@ static bool check_floor_collision() {
 
 static void horizontal_rotate() {
     if (p.dx != 0) {
-        bool h_flip = (p.dx > FIX16(0)) ? FALSE : TRUE; 
-        SPR_setHFlip(p.sprite, h_flip); 
+        p.turned = (p.dx > FIX16(0)) ? FALSE : TRUE; 
+        SPR_setHFlip(p.sprite, p.turned); 
     }
 }
 
@@ -328,6 +323,8 @@ void player_update() {
     handle_state();
     update_position();
 
+    KLog_U1("state ", p.state);
+
     if (p.beast_mode)
         timer_tick(&beast_mode_timer);
 
@@ -355,7 +352,7 @@ static enum PLAYER_STATE random_hit_state() {
 }
 
 void player_set_state(enum PLAYER_STATE state) {
-    if (p.state == STATE_JUMP && state == STATE_FIRST_HIT) {
+    if ((p.state == STATE_JUMP || p.state == STATE_BEAST_JUMP) && state == STATE_FIRST_HIT) {
         update_state(STATE_JUMP_HIT); 
         return; 
     } 
@@ -390,9 +387,16 @@ void player_set_state(enum PLAYER_STATE state) {
 }
 
 void player_bang(int8_t damage) {
-    p.health -= damage;
-    update_state(STATE_BANG);
-    XGM_startPlayPCM(RICK_BUMP_SOUND_ID, 15, SOUND_PCM_CH2);
+    if (p.state != STATE_BANG) {
+        p.health -= damage;
+        update_state(STATE_BANG);
+        XGM_startPlayPCM(RICK_BUMP_SOUND_ID, 15, SOUND_PCM_CH2);
+    }
+}
+
+#define ADDITIONAL_ENERGY 25
+void player_energy_up() {
+    p.energy += ADDITIONAL_ENERGY;
 }
 
 enum PLAYER_MOVE_DIRECTION player_get_direction() {

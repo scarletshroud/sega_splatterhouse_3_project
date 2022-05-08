@@ -15,7 +15,7 @@ void zombie_list_pop_back(struct zombie_list* head);
 void zombie_list_push_back(struct zombie_list** head, struct zombie* z); 
  
 void zombie_list_clear(struct zombie_list** head);
-void zombie_list_remove(struct zombie_list** head, struct zombie_list* z); 
+void zombie_list_remove(struct zombie_list** head, struct zombie* z); 
 
 bool zombie_list_empty(struct zombie_list* head);
 uint8_t zombie_list_size(struct zombie_list* head);

@@ -11,8 +11,7 @@
 #define FLOOR_UPPER_SIDE 80
 #define FLOOR_DOWN_SIDE 120
 
-//struct zombie_list* head;
-struct zombie* zombies[3];
+struct zombie_list* head;
 
 void play_state_init(); 
 void play_state_render(); 

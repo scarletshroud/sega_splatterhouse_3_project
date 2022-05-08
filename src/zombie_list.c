@@ -33,15 +33,18 @@ void zombie_list_clear(struct zombie_list** head) {
     } 
 }
 
-void zombie_list_remove(struct zombie_list** head, struct zombie_list* z) {
+void zombie_list_remove(struct zombie_list** head, struct zombie* z) {
     struct zombie_list* current = *head;
     struct zombie_list* prev = NULL; 
 
     while (current != NULL) {
-        if (current == z) {
+        if (current->z == z) {
             if (prev != NULL) {
                 prev->next = current->next;
+            } else {
+                *head = current->next;
             }
+        
             free(current);
             return;
         }

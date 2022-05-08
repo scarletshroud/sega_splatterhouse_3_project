@@ -36,6 +36,7 @@ void menu_state_update() {
 }
 
 void menu_state_clean() {
+    SPR_releaseSprite(&menu_cursor); 
     VDP_resetScreen();
 } 
 

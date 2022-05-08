@@ -59,7 +59,11 @@ void title_state_update() {
 
 void title_state_clean() {
     XGM_stopPlay();
-    VDP_resetScreen();
+    VDP_setHorizontalScroll(BG_B, 0);
+    VDP_setVerticalScroll(BG_A, 0);
+    //VDP_resetScreen();
+    VDP_clearPlane(BG_A, TRUE);
+    VDP_clearPlane(BG_B, TRUE);
 } 
 
 void render_title_text() {
@@ -102,4 +106,6 @@ void render_jennifer_animation() {
         SYS_doVBlankProcess();
         timer++;
     }
+
+    set_game_state(MENU_STATE);
 }

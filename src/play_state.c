@@ -14,11 +14,17 @@ static struct camera cam;
 static void clean_zombie();
 static uint32_t start_time;
 
+#define PLANE_WIDTH 64
+#define PLANE_HEIGHT 32
+
 #define START_PLAYER_POS_X 0
 #define START_PLAYER_POS_Y 0
 #define REMAINING_TIME 60
 void play_state_init() {
     short index = 1;
+    head = NULL;
+
+    VDP_setPlaneSize(PLANE_WIDTH, PLANE_HEIGHT, TRUE);
 
     VDP_loadTileSet(&level_tileset, index, DMA);
     VDP_setPaletteColors(PAL0, level_palette.data, 16 * 2);
@@ -32,10 +38,8 @@ void play_state_init() {
     player_init(FIX16(START_PLAYER_POS_X), FIX16(START_PLAYER_POS_Y)); 
     camera_init(&cam, map, FIX16(0), FIX16(0), FIX16(2));
 
-    zombies[0] = create_zombie(FIX16(50), FIX16(50));
-    //zombies[1] = create_zombie(FIX16(100), FIX16(100));
-    //zombie_list_push_back(&head, create_zombie(FIX16(50), FIX16(50)));
-    //zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(150)));
+    zombie_list_push_back(&head, create_zombie(FIX16(50), FIX16(50)));
+    zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(60)));
 
     XGM_setLoopNumber(-1);
     XGM_startPlay(level_track); 
@@ -52,50 +56,49 @@ static uint32_t calculate_ramaining_time() {
     return REMAINING_TIME - calculate_seconds();
 }
 
-#define HUD_TEXT_TILE_Y 25
-#define LIFES_TEXT_TILE_X 30 
-#define HEALTH_TEXT_TILE_X 1
-#define ENERGY_TEXT_TILE_X 15 
+#define BOTTOM_HUD_TEXT_TILE_Y 25
+#define LIFES_TEXT_TILE_X 29 
+#define HEALTH_TEXT_TILE_X 2
+#define ENERGY_TEXT_TILE_X 16 
 #define TIMER_TEXT_TILE_X 5
-#define TIMER_TEXT_TILE_Y 1  
+#define UPPER_HUD_TEXT_TILE_Y 1  
 static void draw_hud() {
-    VDP_drawText("Health:",  HEALTH_TEXT_TILE_X, HUD_TEXT_TILE_Y);
-    VDP_drawText("Energy:",  ENERGY_TEXT_TILE_X, HUD_TEXT_TILE_Y);
-    VDP_drawText("Lifes:",   LIFES_TEXT_TILE_X,  HUD_TEXT_TILE_Y);
-    VDP_drawText("Time: ",   TIMER_TEXT_TILE_X,  TIMER_TEXT_TILE_Y);
+    VDP_drawText("Health:",  HEALTH_TEXT_TILE_X, BOTTOM_HUD_TEXT_TILE_Y);
+    VDP_drawText("Energy:",  ENERGY_TEXT_TILE_X, BOTTOM_HUD_TEXT_TILE_Y);
+    VDP_drawText("Lifes:",   LIFES_TEXT_TILE_X,  BOTTOM_HUD_TEXT_TILE_Y);
+    VDP_drawText("Time: ",   TIMER_TEXT_TILE_X,  UPPER_HUD_TEXT_TILE_Y);
 }
 
 #define VALUE_OFFSET 7
-#define VALUE_MAX_LENGTH 3
+#define VALUE_MAX_LENGTH 4
 static void draw_hud_values() {
     char health[VALUE_MAX_LENGTH];
     char energy[VALUE_MAX_LENGTH];
     char lifes[VALUE_MAX_LENGTH];
 
-    sprintf(health, "%d", player_get_health());
     sprintf(energy, "%d", player_get_energy());
+    sprintf(health, "%d", player_get_health());
     sprintf(lifes, "%d", player_get_lifes());
     
-
-    VDP_drawText(health,  HEALTH_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
-    VDP_drawText(energy,  ENERGY_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
-    VDP_drawText(lifes,  LIFES_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y);
+    VDP_drawText(health,  HEALTH_TEXT_TILE_X + VALUE_OFFSET, BOTTOM_HUD_TEXT_TILE_Y);
+    VDP_drawText(energy,  ENERGY_TEXT_TILE_X + VALUE_OFFSET, BOTTOM_HUD_TEXT_TILE_Y);
+    VDP_drawText(lifes,  LIFES_TEXT_TILE_X + VALUE_OFFSET, BOTTOM_HUD_TEXT_TILE_Y);
 }
 
 static void draw_hud_time() {
     char time[VALUE_MAX_LENGTH];
     sprintf(time, "%d", calculate_ramaining_time());
-    VDP_drawText(time,  TIMER_TEXT_TILE_X + VALUE_OFFSET, TIMER_TEXT_TILE_Y);
+    VDP_drawText(time,  TIMER_TEXT_TILE_X + VALUE_OFFSET, UPPER_HUD_TEXT_TILE_Y);
 }
 
 static void clear_hud_time() {
-    VDP_clearText(TIMER_TEXT_TILE_X + VALUE_OFFSET, TIMER_TEXT_TILE_Y, VALUE_MAX_LENGTH);
+    VDP_clearText(TIMER_TEXT_TILE_X + VALUE_OFFSET, UPPER_HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
 }
 
 static void clear_hud_values() {
-    VDP_clearText(HEALTH_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
-    VDP_clearText(ENERGY_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
-    VDP_clearText(LIFES_TEXT_TILE_X + VALUE_OFFSET, HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
+    VDP_clearText(HEALTH_TEXT_TILE_X + VALUE_OFFSET, BOTTOM_HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
+    VDP_clearText(ENERGY_TEXT_TILE_X + VALUE_OFFSET, BOTTOM_HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
+    VDP_clearText(LIFES_TEXT_TILE_X + VALUE_OFFSET, BOTTOM_HUD_TEXT_TILE_Y, VALUE_MAX_LENGTH);
 }
 
 void play_state_render() {
@@ -103,19 +106,22 @@ void play_state_render() {
     draw_hud_values();
 }
 
-static void all_zombie_update() {
-   /* struct zombie_list* current = head;
-    while (current != NULL) {
-        zombie_update(current->z);
-        current = current->next; 
-    } */
+static void clean_zombie(struct zombie_list* current) {
+    SPR_releaseSprite(current->z->sprite);
+    player_energy_up();
+    zombie_list_remove(&head, current->z);
+}
 
-    for (uint8_t i = 0; i < 1; ++i) {
-        //KLog_U1("z state ", zombies[i]->state);
-        if (zombies[i]->state != ZOMBIE_STATE_NONE)
-            zombie_update(zombies[i]);
-        else 
-            SPR_releaseSprite(zombies[i]->sprite);
+static void all_zombie_update() {
+    struct zombie_list* current = head;
+    while (current != NULL) {
+        if (current->z->state != ZOMBIE_STATE_DEAD) {
+            zombie_update(current->z);
+        } else {
+            clean_zombie(current);
+            KLog_U1("list size 2 ", zombie_list_size(head));
+        }
+        current = current->next; 
     }
 }
 
@@ -144,8 +150,7 @@ void play_state_update() {
         game_over(); 
     }
 
-    clean_zombie();
-    all_zombie_update(); 
+    all_zombie_update();
     camera_update(&cam); 
 
     if (calculate_seconds() > 0) {
@@ -161,18 +166,6 @@ void play_state_update() {
 
     SPR_update();
     SYS_doVBlankProcess();
-}
-
-static void clean_zombie() {
-    /*struct zombie_list* current = head;
-    while (current != NULL) {
-
-        if (current->z->state == ZOMBIE_STATE_NONE) {
-            zombie_list_remove(&head, current); 
-        }
- 
-        current = current->next;
-    }*/
 }
 
 void play_state_clean() {
