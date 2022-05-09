@@ -3,6 +3,7 @@ IMAGE jennifer_image "sprites/jennifer.png" BEST
 
 SPRITE rick "sprites/rick_sheet.png" 10 10 BEST 5
 SPRITE zombie_sprite "sprites/zombie.png" 9 8 BEST 5
+SPRITE beast_sprite "sprites/beast2.png" 13 13 BEST 5
 SPRITE menu_cursor "sprites/cursor.bmp" 1 1 NONE 0
 SPRITE jennifer_cries "sprites/jen-cry.png" 12 13 BEST 10
 
@@ -16,4 +17,5 @@ XGM game_over_track "music/game_over_theme.vgm" -1
 
 WAV bump_sound "music/bump.wav" XGM
 WAV rick_bump_sound "music/bump2.wav" XGM
-WAV rick_death_sound "music/rick_death.wav" XGM
+WAV zombie_death_sound "music/zombie_death.wav" XGM
+WAV rick_beast_transformation_sound "music/beast_transformation.wav" XGM

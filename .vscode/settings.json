@@ -7,6 +7,8 @@
 "git.ignoreLimitWarning": true,
 "files.associations": {
     "resources.h": "c",
-    "play_state.h": "c"
+    "play_state.h": "c",
+    "genesis.h": "c",
+    "timer.h": "c"
 }
 }

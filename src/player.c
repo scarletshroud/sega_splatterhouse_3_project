@@ -1,7 +1,10 @@
 #include "timer.h"
 #include "zombie.h"
 #include "player.h"
+#include "sounds.h"
+#include "position.h"
 #include "resources.h"
+#include "beast.h"
 #include "play_state.h"
 #include "zombie_list.h"
 #include "position_util.h"
@@ -37,18 +40,16 @@ static const fix16 gravity = FIX16(0.3);
 static struct timer frame_timer;
 static struct timer beast_mode_timer;
 
-#define BUMP_SOUND_ID 64
-#define RICK_DEATH_SOUND_ID 65
-#define RICK_BUMP_SOUND_ID 66
 static void sounds_init() {
     XGM_setPCM(BUMP_SOUND_ID, bump_sound, sizeof(bump_sound));
-    XGM_setPCM(RICK_DEATH_SOUND_ID, rick_death_sound, sizeof(rick_death_sound));
+    //XGM_setPCM(RICK_DEATH_SOUND_ID, rick_death_sound, sizeof(rick_death_sound));
     XGM_setPCM(RICK_BUMP_SOUND_ID, rick_bump_sound, sizeof(rick_bump_sound));
+    XGM_setPCM(RICK_BEAST_TRANSFORMATION_SOUND_ID, rick_beast_transformation_sound, sizeof(rick_beast_transformation_sound));
 }
 
 #define DEFAULT_DX 0 
 #define DEFAULT_DY 0
-#define DEFAULT_ENERGY 0
+#define DEFAULT_ENERGY 50
 #define DEFAULT_LIFE 3 
 #define DEFAULT_HEALTH 100
 #define DEFAULT_DAMAGE 35
@@ -133,28 +134,34 @@ static void jump() {
     }
 }
 
-static bool check_hit_axis_y(const struct zombie* const z) {
-    return (fix16ToInt(p.pos_y) >= fix16ToInt(z->pos_y) - z->height / 2 && fix16ToInt(p.pos_y) <= fix16ToInt(z->pos_y) + z->height / 2);
+static bool check_hit_axis_y(fix16 pos_y, fix16 height) {
+    return (fix16ToInt(p.pos_y) >= fix16ToInt(pos_y) - height / 2 && fix16ToInt(p.pos_y) <= fix16ToInt(pos_y) + height / 2);
 }
 
-static bool check_hit_axis_x(const struct zombie* const z) {
-    return ((fix16ToInt(p.pos_x) + p.sprite_width >= fix16ToInt(z->pos_x) - z->width / 2 && fix16ToInt(p.pos_x) + p.sprite_width <= fix16ToInt(z->pos_x) + z->width && p.turned == FALSE)
-                || (fix16ToInt(p.pos_x) - p.sprite_width / 2 >= fix16ToInt(z->pos_x) - z->width && fix16ToInt(p.pos_x) - p.sprite_width / 2 <= fix16ToInt(z->pos_x) + z->width / 2) && p.turned == TRUE);
+static bool check_hit_axis_x(fix16 pos_x, fix16 width) {
+    return ((fix16ToInt(p.pos_x) + p.sprite_width >= fix16ToInt(pos_x) - width / 2 && fix16ToInt(p.pos_x) + p.sprite_width <= fix16ToInt(pos_x) + width && p.turned == FALSE)
+                || (fix16ToInt(p.pos_x) - p.sprite_width / 2 >= fix16ToInt(pos_x) - width && fix16ToInt(p.pos_x) - p.sprite_width / 2 <= fix16ToInt(pos_x) + width / 2) && p.turned == TRUE);
 }
 
-static bool check_hit(const struct zombie* const z) {
-    return (check_hit_axis_y(z) && check_hit_axis_x(z));  
+static bool check_hit(fix16 pos_x, fix16 pos_y, fix16 height, fix16 width) {
+    return (check_hit_axis_y(pos_y, height) && check_hit_axis_x(pos_x, width));  
 }
 
 static void attack() {
     struct zombie_list* list = head;
     while (list != NULL) {
-        if (check_hit(list->z)) {
+        if (check_hit(list->z->pos_x, list->z->pos_y, list->z->height, list->z->width)) {
             bang_zombie(list->z, p.damage);
             XGM_startPlayPCM(BUMP_SOUND_ID, 15, SOUND_PCM_CH2); 
         }
         list = list->next; 
     }
+
+   /* const struct position beast_pos = beast_get_position(); 
+    if (check_hit(beast_pos.x, beast_pos.y, beast_height(), beast_width())) {
+        bang_beast(p.damage);
+        XGM_startPlayPCM(BUMP_SOUND_ID, 15, SOUND_PCM_CH2); 
+    } */
 }
 
 static bool check_floor_collision() {
@@ -174,9 +181,14 @@ static void horizontal_rotate() {
     }
 }
 
+enum PLAYER_STATE prev_state = STATE_DEAD;
 static void animate() {      
     horizontal_rotate(); 
-    SPR_setAnim(p.sprite, p.state);
+
+    if (prev_state != p.state)
+        SPR_setAnim(p.sprite, p.state);
+    
+    prev_state = p.state;
 }
 
 static void transform_to_normal() {
@@ -256,6 +268,10 @@ static void handle_state() {
             break;
 
         case STATE_BEAST_TRANSORMATION:
+            if (frame_timer.time == 0) {
+                XGM_startPlayPCM(RICK_BEAST_TRANSFORMATION_SOUND_ID, 15, SOUND_PCM_CH2); 
+            }
+
             if (frame_timer.time == 30) {
                 update_state(STATE_STAND);
                 timer_reset(&frame_timer); 
@@ -264,6 +280,10 @@ static void handle_state() {
             break;
         
         case STATE_NORMAL_TRANSORMATION:
+            if (frame_timer.time == 0) {
+                XGM_startPlayPCM(RICK_BEAST_TRANSFORMATION_SOUND_ID, 15, SOUND_PCM_CH2); 
+            }
+
             if (frame_timer.time == 30) {
                 update_state(STATE_STAND);
                 timer_reset(&frame_timer); 
@@ -272,6 +292,7 @@ static void handle_state() {
             break;
 
         case STATE_BANG:
+        case STATE_BEAST_BANG:
             if (frame_timer.time == 7) {
                 update_state(STATE_STAND);
                 timer_reset(&frame_timer);
@@ -285,7 +306,7 @@ static void handle_state() {
                 if (p.lifes > 0) {
                     rebel();
                 } else {
-                    XGM_startPlayPCM(RICK_DEATH_SOUND_ID, 15, SOUND_PCM_CH2); 
+                    //XGM_startPlayPCM(RICK_DEATH_SOUND_ID, 15, SOUND_PCM_CH2); 
                     p.state = STATE_DEAD;
                 }
 
@@ -321,8 +342,6 @@ static void check_health() {
 void player_update() {
     handle_state();
     update_position();
-
-    KLog_U1("state ", p.state);
 
     if (p.beast_mode)
         timer_tick(&beast_mode_timer);
@@ -387,7 +406,12 @@ void player_set_state(enum PLAYER_STATE state) {
 void player_bang(int8_t damage) {
     if (p.state != STATE_BANG && p.state != STATE_FIRST_HIT && p.state != STATE_SECOND_HIT && p.state != STATE_THIRD_HIT) {
         p.health -= damage;
-        update_state(STATE_BANG);
+
+        if (p.beast_mode == TRUE)
+            p.state = STATE_BEAST_BANG;
+        else 
+            p.state = STATE_BANG;
+
         XGM_startPlayPCM(RICK_BUMP_SOUND_ID, 15, SOUND_PCM_CH2);
     }
 }
@@ -421,6 +445,6 @@ uint16_t player_get_lifes() {
     return p.lifes;
 }
 
-struct player_position player_get_position() {
-    return (struct player_position) {.x = p.pos_x, .y = p.pos_y};
+struct position player_get_position() {
+    return (struct position) {.x = p.pos_x, .y = p.pos_y};
 }

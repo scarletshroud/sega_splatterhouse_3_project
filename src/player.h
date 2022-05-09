@@ -2,6 +2,7 @@
 #define _PLAYER_H_
 
 #include <genesis.h>
+#include "position.h"
 
 enum PLAYER_STATE {
     STATE_STAND,
@@ -22,6 +23,7 @@ enum PLAYER_STATE {
     STATE_NORMAL_TRANSORMATION,
     STATE_DIE,
     STATE_BANG,
+    STATE_BEAST_BANG,
     STATE_DEAD 
 }; 
 
@@ -31,11 +33,6 @@ enum PLAYER_MOVE_DIRECTION {
     DIRECTION_RIGHT,
     DIRECTION_LEFT,
     DIRECTION_NONE
-};
-
-struct player_position {
-    fix16 x; 
-    fix16 y;
 };
 
 void player_init(const fix16 pos_x, const fix16 pos_y); 
@@ -54,6 +51,6 @@ int16_t player_get_health();
 uint16_t player_get_energy(); 
 uint16_t player_get_lifes(); 
 
-struct player_position player_get_position(); 
+struct position player_get_position(); 
 
 #endif

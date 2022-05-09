@@ -49,8 +49,7 @@ void update_cursor_pos() {
 void move_cursor_up() {
     if (current_menu_option > 0) {
         current_menu_option--;
-    } 
-    else {
+    } else {
         current_menu_option = OPTIONS_NUM - 1; 
     }
     update_cursor_pos(); 
@@ -59,8 +58,7 @@ void move_cursor_up() {
 void move_cursor_down() {
     if (current_menu_option < OPTIONS_NUM - 1) {
         current_menu_option++;
-    } 
-    else {
+    } else {
         current_menu_option = 0; 
     }
     update_cursor_pos(); 

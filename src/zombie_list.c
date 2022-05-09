@@ -69,7 +69,6 @@ void zombie_print_list(struct zombie_list* head) {
     struct zombie_list* current = head;
 
     while(current != NULL) {
-        KLog_U1("id ", current->z->id);
         current = current->next;
     }
 }

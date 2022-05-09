@@ -1,6 +1,7 @@
 #include "play_state.h"
 
 #include "game.h"
+#include "beast.h"
 #include "camera.h"
 #include "zombie.h"
 #include "player.h"
@@ -41,6 +42,9 @@ void play_state_init() {
 
     zombie_list_push_back(&head, create_zombie(FIX16(50), FIX16(50)));
     zombie_list_push_back(&head, create_zombie(FIX16(150), FIX16(60)));
+    zombie_list_push_back(&head, create_zombie(FIX16(200), FIX16(30)));
+
+    //beast_init(FIX16(50), FIX16(10));
 
     XGM_setLoopNumber(-1);
     XGM_startPlay(level_track); 
@@ -122,7 +126,6 @@ static void all_zombie_update() {
             zombie_update(current->z);
         } else {
             clean_zombie(current);
-            KLog_U1("list size 2 ", zombie_list_size(head));
         }
         current = current->next; 
     }
@@ -153,6 +156,7 @@ void play_state_update() {
         game_over(); 
     }
 
+    //beast_update();
     all_zombie_update();
     camera_update(&cam); 
 

@@ -1,0 +1,10 @@
+#ifndef _SOUNDS_H_
+#define _SOUNDS_H_
+
+#define BUMP_SOUND_ID 64
+#define ZOMBIE_DEATH_SOUND_ID 65
+#define RICK_BUMP_SOUND_ID 66
+#define RICK_BUMP_SOUND_ID 67
+#define RICK_BEAST_TRANSFORMATION_SOUND_ID 68
+
+#endif

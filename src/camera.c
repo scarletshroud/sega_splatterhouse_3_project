@@ -1,5 +1,6 @@
 #include "camera.h"
 #include "player.h"
+#include "position.h"
 
 void camera_init(struct camera *cam, Map *map, fix16 start_pos_x, fix16 start_pos_y, fix16 velocity) {
     cam->pos_x = start_pos_x;
@@ -49,7 +50,7 @@ fix16 prev = 0;
 #define CAMERA_RIGHT_BORDER 15
 #define CAMERA_LEFT_BORDER 165
 void camera_update(struct camera* cam) {
-    struct player_position p_pos = player_get_position();
+    struct position p_pos = player_get_position();
     enum PLAYER_MOVE_DIRECTION p_dir = player_get_direction();
 
     if (fix16ToInt(p_pos.x) > CAMERA_RIGHT_BORDER && prev != p_pos.x &&  p_dir == DIRECTION_RIGHT) {

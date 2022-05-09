@@ -1,4 +1,6 @@
 #include "zombie.h"
+#include "sounds.h"
+#include "position.h"
 #include "resources.h"
 #include "play_state.h"
 #include "timer.h"
@@ -11,13 +13,12 @@
 #define DEFAULT_HEALTH 100
 #define DEFAULT_DAMAGE 25
 
-uint16_t frame_timer = 0;
+static uint16_t frame_timer = 0;
 
 #define DISTANCE_TO_HIT 30
 #define DISTANCE_TO_ATTACK 70
 
 static void init(struct zombie *z, const fix16 start_pos_x, const fix16 start_pos_y) {
-    z->id = (global_id++);
     z->pos_x = to_game_pos_x(start_pos_x, SPRITE_WIDTH); 
     z->pos_y = to_game_pos_y(start_pos_y, SPRITE_HEIGHT);
     z->dx = FIX16(ZOMBIE_DEFAULT_DX); 
@@ -32,6 +33,8 @@ static void init(struct zombie *z, const fix16 start_pos_x, const fix16 start_po
     z->height = SPRITE_HEIGHT;
     z->target_distance = DISTANCE_TO_ATTACK;
     z->frame_counter = 0;  
+
+    XGM_setPCM(ZOMBIE_DEATH_SOUND_ID, zombie_death_sound, sizeof(zombie_death_sound));
 }
 
 struct zombie* create_zombie(const fix16 start_pos_x, const fix16 start_pos_y) {
@@ -40,11 +43,11 @@ struct zombie* create_zombie(const fix16 start_pos_x, const fix16 start_pos_y) {
     return z; 
 }
 
-static int8_t calculate_distance_x_to_player(const struct zombie* const z, const struct player_position* const player_pos) {
+static int8_t calculate_distance_x_to_player(const struct zombie* const z, const struct position* const player_pos) {
     return fix16ToInt(z->pos_x) - fix16ToInt(player_pos->x);
 }
 
-static int8_t calculate_distance_y_to_player(const struct zombie* const z, const struct player_position* const player_pos) {
+static int8_t calculate_distance_y_to_player(const struct zombie* const z, const struct position* const player_pos) {
     return fix16ToInt(z->pos_y) - fix16ToInt(player_pos->y);
 }
 
@@ -70,7 +73,7 @@ static void update_position(struct zombie* z) {
 }
 
 static bool walk(struct zombie *z) {
-    const struct player_position player_pos = player_get_position(); 
+    const struct position player_pos = player_get_position(); 
     const int8_t distance_x = calculate_distance_x_to_player(z, &player_pos);
     const int8_t distance_y = calculate_distance_y_to_player(z, &player_pos); 
 
@@ -86,7 +89,7 @@ static bool walk(struct zombie *z) {
 }
 
 static bool walk_away(struct zombie *z) {
-    const struct player_position player_pos = player_get_position(); 
+    const struct position player_pos = player_get_position(); 
     const int8_t distance_x = calculate_distance_x_to_player(z, &player_pos);
     const int8_t distance_y = calculate_distance_y_to_player(z, &player_pos); 
 
@@ -112,7 +115,7 @@ static void hit(struct zombie *z) {
         return; 
     }
 
-    const struct player_position player_pos = player_get_position();
+    const struct position player_pos = player_get_position();
     if (abs(fix16ToInt(z->pos_x) - fix16ToInt(player_pos.x)) <= IMPACT_DISTANCE && abs(fix16ToInt(z->pos_y) - fix16ToInt(player_pos.y) <= IMPACT_DISTANCE)) {
         update_state(z, ZOMBIE_STATE_HIT);
         player_bang(z->damage);         
@@ -176,6 +179,9 @@ static void handle_state(struct zombie* z) {
             break;
 
         case ZOMBIE_STATE_DIE:
+            if (z->frame_counter == 0)
+                XGM_startPlayPCM(ZOMBIE_DEATH_SOUND_ID, 15, SOUND_PCM_CH2); 
+
             if (z->frame_counter == ANIM_DIE_TIME) {
                 z->state = ZOMBIE_STATE_DEAD;
                 z->frame_counter = 0;
@@ -193,9 +199,7 @@ static void handle_state(struct zombie* z) {
             } else {
                 update_position(z);
             }
-
             animate(z, ZOMBIE_STATE_WALK + INJURED_STATE_OFFSET * z->injured);
-
             break;
 
         case ZOMBIE_STATE_WALK_AWAY: 
